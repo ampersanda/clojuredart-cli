@@ -1,0 +1,82 @@
+(ns cljds.generators.dart
+  (:require ["dart:io" :refer [exit Process]]
+            [cljds.consts :refer [docs-url sha-url]]
+            ["package:http/http.dart" :as http]
+            [cljds.utils.io :as io]
+            [clojure.string :as string]
+            [cljds.templates :refer [dart-edn-tpl dart-main-tpl]]
+            [cljds.utils.std :refer [>> !!]]))
+
+(defn valid? [project-name]
+  (re-matches #"([A-Za-z\-\_]+)" project-name))
+
+(defn- make-files [sha dir-name namespace]
+  (let [dir       (await (io/mkdir dir-name))]
+    (>> (str "Creating \"" (.-path dir) "\" project"))
+
+    ;; initialize deps.edn
+    (let [edn-file  (await (io/mkfile (str dir-name "/deps.edn")))
+          content   (string/replace dart-edn-tpl #"CLJD_SHA" sha)]
+      (await (.writeAsString edn-file content)))
+
+    ;; add main file
+    (let [main-file (await
+                     (io/mkfile (str dir-name "/src/" dir-name "/core.cljd") :recursive true))
+          content   (string/replace dart-main-tpl #"NAMESPACE" namespace)]
+      (await (.writeAsString main-file content)))
+
+    ;; clj -M -m cljd.build init --dart namespace
+    (>> (str "Running clj -M -m cljd.build init --dart " namespace))
+
+    (let [result (await
+                  (.run Process "clj" ["-M" "-m" "cljd.build" "init" "--dart" namespace] .workingDirectory dir-name))]
+      (>> (.-stdout result))
+      (!! (.-stderr result)))
+
+    ;; creating src dirs
+    (await (io/mkdir (str dir-name "/src/" dir-name) :recursive true))))
+
+(defn- latest-sha
+  "Getting available latest SHA from ClojureDart repository"
+  []
+  (try
+    (let [client       (http/Client)
+          content      (await (.get client sha-url))
+          status-code  (.-statusCode content)]
+
+      (>> (str "Getting latest version from " (.toString sha-url)))
+
+      (if (= status-code 200)
+        (let [result (filter (fn [e] (seq e)) (string/split-lines (.-body content)))
+              latest (last result)]
+          (>> (str "Using " latest))
+          latest)
+        (>> "Failed getting latest")))
+    (catch
+      #_{:clj-kondo/ignore [:unresolved-symbol]}
+      dynamic e
+      (!! (str "Failed getting latest sha -> " e)))))
+
+(defn- dart-gen
+  "Generate plain-dart project -> https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md"
+  [name dir-name]
+  (let [namespace      (str name ".core")
+        sha            (await (latest-sha))]
+    (await (make-files sha dir-name namespace))
+    (>> (str "Project " namespace " created successfully! \n"))
+    (>>
+     (str "To run \n\n$ cd " dir-name " && clj -M -m cljd.build compile && dart run bin/" dir-name ".dart" "\n"))
+    (>> (str "Read more " docs-url))
+    (exit 0)))
+
+(defn generate [project-name]
+  (let [safe-name     (clojure.string/replace project-name #"_" "-")
+        safe-dir-name (clojure.string/replace project-name #"-" "_")]
+    (cond
+      (and (valid? safe-name) (valid? safe-dir-name))
+      (dart-gen safe-name safe-dir-name)
+
+      :else
+      (do
+        (!! "Wrong namespace format. e.g. cljds dart projectname")
+        (exit 2)))))

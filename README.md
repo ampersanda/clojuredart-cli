@@ -2,15 +2,16 @@
 
 ClojureDart Project Generation made using ClojureDart, based on steps from https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md.
 
-
-# How to Use
+## Installing
 
 ```shell
 $ dart pub global activate cljds
 ```
 
-and create project by executing
+## _Usage_
+
+Creating plain dart project
 
 ```shell
-$ cljds projectname
+$ cljds dart project_name 
 ```
