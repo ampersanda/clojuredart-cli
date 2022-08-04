@@ -7,6 +7,9 @@ environment:
   sdk: '>=2.17.3 <3.0.0'
 #  sdk: '>=2.18.0-edge.572f24882f2c344f9f95b14091a7ac2cb142f9de <3.0.0'
 
+executables:
+  cljds:
+
 dev_dependencies:
   analyzer: ^3.3.1
   lints: ^2.0.0
