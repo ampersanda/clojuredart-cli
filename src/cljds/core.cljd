@@ -32,9 +32,9 @@
     ;; creating src dirs
     (await (io/mkdir (str project-name "/src/" project-name) :recursive true))))
 
-(defn latest-sha 
-  
-  [] 
+(defn latest-sha
+  "Getting available latest SHA from ClojureDart repository"
+  []
   (try
     (let [sha-url      (.parse Uri sha-url)
           client       (http/Client)
@@ -54,7 +54,7 @@
      dynamic e
      (!! (str "Failed getting latest sha -> " e)))))
 
-(defn plain-gen
+(defn dart-gen
   "Generate plain-dart project -> https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md"
   [namespace]
   (let [first-ns     (nth namespace 1)
@@ -69,14 +69,14 @@
 
 (defn main [arguments]
   (when (nil? (seq arguments))
-    (!! "Project name is required. e.g. projectname")
+    (!! "Project name is required. e.g. cljds projectname")
     (exit 2))
 
   (let [ns-result    (re-find #"([A-Za-z]+)" (first arguments))
         valid-ns?    (not (nil? ns-result))]
 
     (if valid-ns?
-      (plain-gen ns-result)
+      (dart-gen ns-result)
       (do
-        (!! "Wrong namespace format. e.g. projectname")
+        (!! "Wrong namespace format. e.g. cljds projectname")
         (exit 2)))))
