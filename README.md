@@ -1,15 +1,15 @@
-# CLJDS
+# ClojureDart-CLI/CLJDS
 
-ClojureDart Project Generation made using ClojureDart
+ClojureDart Project Generation made using ClojureDart, based on steps from https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md.
 
-Based on steps from https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md
 
-Install CLI
+# How to Use
+
 ```shell
 $ dart pub global activate cljds
 ```
 
-and create project
+and create project by executing
 
 ```shell
 $ cljds projectname
