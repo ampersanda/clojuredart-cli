@@ -9,6 +9,7 @@ build/
 .cpcache
 .clojuredart
 .clj-kondo
+.lsp
 quickstart
 
 # Comment for "dart pub publish"
