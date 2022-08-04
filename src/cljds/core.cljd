@@ -100,7 +100,7 @@
 
 (defn main [arguments]
   (when (nil? (seq arguments))
-        (!! "namespace arguments is required. e.g. abc.def")
+        (!! "namespace arguments is required. e.g. projectname.core")
         (exit 2))
 
   (let [ns-result    (re-find #"([A-Za-z]+)\.([A-Za-z]+)" (first arguments))
@@ -109,5 +109,5 @@
     (if valid-ns?
       (generate-project ns-result)
       (do
-        (!! "Wrong namespace format. e.g. abc.def")
+        (!! "Wrong namespace format. e.g. projectname.core")
         (exit 2)))))
