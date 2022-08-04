@@ -1,0 +1,113 @@
+(ns cljds.core
+    (:require ["dart:io" :refer [exitCode stdin stdout stderr exit Directory File Process]]
+              ["package:http/http.dart" :as http]
+              [clojure.string :as string]))
+
+(def docs-url
+  "https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md")
+
+(def edn-tpl
+  "{:paths [\"src\"] ; where your cljd files will live
+    :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
+           tensegritics/clojuredart
+           {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
+            ; or  \"https://github.com/tensegritics/ClojureDart.git\"
+            :sha \"CLJD_SHA\"}}}")
+
+(def main-tpl
+  "(ns NAMESPACE
+     (:require [\"dart:io\" :refer [stdout exitCode]]))
+
+   (defn main [args]
+     (set! exitCode 0)
+     (.writeln stdout \"hello, world\")
+     (.writeln stdout args)
+     (.writeln stdout (nil? (seq args))))")
+
+(defn- >> [text]
+  (.writeln stdout text))
+
+(defn- !! [text]
+  (.writeln stderr text))
+
+(defn- quote [text]
+  (str "\"" text "\""))
+
+(defn make-files [sha first-ns second-ns full-ns]
+  (let [dir       (await
+                   (-> (Directory first-ns)
+                       (.create .recursive false)))
+        path      (.-path dir)]
+    (>> (str "Creating " (quote path) " project"))
+
+    ;; initialize deps.edn
+    (let [edn-file  (-> (File (str first-ns "/deps.edn"))
+                        (await (.create .recursive false)))
+          content   (string/replace edn-tpl #"CLJD_SHA" sha)]
+      (await (.writeAsString edn-file content)))
+
+    ;; add main file
+    (let [main-file (-> (File (str first-ns "/src/" first-ns "/" second-ns ".cljd"))
+                        (.create .recursive true))
+          content   (string/replace main-tpl #"NAMESPACE" full-ns)]
+      (await (.writeAsString main-file content)))
+
+    ;; clj -M -m cljd.build init --dart namespace
+    (>> (str "Running clj -M -m cljd.build init --dart " full-ns))
+    (let [result (await
+                  (.run Process "clj" ["-M" "-m" "cljd.build" "init" "--dart" full-ns] .workingDirectory first-ns))]
+      (>> (.-stdout result))
+      (!! (.-stderr result)))
+
+    ;; creating src dirs
+    (await
+     (doto (Directory (str first-ns "/src/" first-ns))
+           (.create .recursive true)))))
+
+(defn latest-sha []
+  "Get latest sha from -> https://raw.githubusercontent.com/Tensegritics/ClojureDart/main/.hashes"
+  (try
+    (let [sha-url      (.parse Uri "https://raw.githubusercontent.com/Tensegritics/ClojureDart/main/.hashes")
+          client       (http/Client)
+          content      (await (.get client sha-url))
+          status-code  (.-statusCode content)]
+
+      (>> (str "Getting latest version from " (.toString sha-url)))
+
+      (if (= status-code 200)
+        (let [result (filter (fn [e] (not (empty? e))) (string/split-lines (.-body content)))
+              latest (last result)]
+          (>> (str "Using " latest))
+          latest)))
+    (catch dynamic e
+      (!! (str "Failed getting latest sha -> " e)))))
+
+(defn generate-project [namespace]
+  "Generate plain-dart project -> https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md"
+
+  (let [first-ns     (nth namespace 1)
+        second-ns    (nth namespace 2)
+        full-ns      (str first-ns "." second-ns)]
+
+    (let [sha (await (latest-sha))]
+      (await (make-files sha first-ns second-ns full-ns))
+      (>> (str "Project " full-ns " created successfully!"))
+      (>> "To compile -> clj -M -m cljd.build compile")
+      (>> "To watch   -> clj -M -m cljd.build watch")
+      (>> (str "To run     -> dart run bin/" first-ns ".dart"))
+      (>> (str "Read more " docs-url))
+      (exit 0))))
+
+(defn main [arguments]
+  (when (nil? (seq arguments))
+        (!! "namespace arguments is required. e.g. abc.def")
+        (exit 2))
+
+  (let [ns-result    (re-find #"([A-Za-z]+)\.([A-Za-z]+)" (first arguments))
+        valid-ns?    (not (nil? ns-result))]
+
+    (if valid-ns?
+      (generate-project ns-result)
+      (do
+        (!! "Wrong namespace format. e.g. abc.def")
+        (exit 2)))))
