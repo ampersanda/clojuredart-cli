@@ -11,6 +11,6 @@ build/
 .clj-kondo
 quickstart
 
-# Uncomment for "dart pub publish"
+# Comment for "dart pub publish"
 bin
 lib
