@@ -1,0 +1,19 @@
+(ns cljds.templates)
+
+(def edn-tpl
+  "{:paths [\"src\"] ; where your cljd files will live
+    :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
+           tensegritics/clojuredart
+           {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
+            ; or  \"https://github.com/tensegritics/ClojureDart.git\"
+            :sha \"CLJD_SHA\"}}}")
+
+(def main-tpl
+  "(ns NAMESPACE
+     (:require [\"dart:io\" :refer [stdout exitCode]]))
+
+   (defn main [args]
+     (set! exitCode 0)
+     (.writeln stdout \"hello, world\")
+     (.writeln stdout args)
+     (.writeln stdout (nil? (seq args))))")

@@ -1,0 +1,7 @@
+(ns cljds.consts)
+
+(def docs-url
+  "https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md")
+
+(def sha-url
+  (.parse Uri "https://raw.githubusercontent.com/Tensegritics/ClojureDart/main/.hashes"))
