@@ -1,6 +1,6 @@
 name: cljds
 description: ClojureDart project generation made using ClojureDart
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/ampersanda/clojuredart-cli
 
 environment:
