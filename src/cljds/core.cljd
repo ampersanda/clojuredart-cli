@@ -42,13 +42,15 @@
 
     ;; initialize deps.edn
     (let [edn-file  (-> (File (str first-ns "/deps.edn"))
-                        (await (.create .recursive false)))
+                        (.create .recursive false)
+                        await)
           content   (string/replace edn-tpl #"CLJD_SHA" sha)]
       (await (.writeAsString edn-file content)))
 
     ;; add main file
     (let [main-file (-> (File (str first-ns "/src/" first-ns "/" second-ns ".cljd"))
-                        (.create .recursive true))
+                        (.create .recursive true)
+                        await)
           content   (string/replace main-tpl #"NAMESPACE" full-ns)]
       (await (.writeAsString main-file content)))
 
