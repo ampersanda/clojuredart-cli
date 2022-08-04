@@ -93,10 +93,8 @@
 
     (let [sha (await (latest-sha))]
       (await (make-files sha first-ns second-ns full-ns))
-      (>> (str "Project " full-ns " created successfully!"))
-      (>> "To compile -> clj -M -m cljd.build compile")
-      (>> "To watch   -> clj -M -m cljd.build watch")
-      (>> (str "To run     -> dart run bin/" first-ns ".dart"))
+      (>> (str "Project " full-ns " created successfully! \n"))
+      (>> (str "To run \n$ cd " first-ns " && clj -M -m cljd.build compile && dart run bin/" first-ns ".dart"))
       (>> (str "Read more " docs-url))
       (exit 0))))
 
