@@ -36,8 +36,7 @@
   "Getting available latest SHA from ClojureDart repository"
   []
   (try
-    (let [sha-url      (.parse Uri sha-url)
-          client       (http/Client)
+    (let [client       (http/Client)
           content      (await (.get client sha-url))
           status-code  (.-statusCode content)]
 
