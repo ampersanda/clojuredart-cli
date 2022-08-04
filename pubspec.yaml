@@ -1,5 +1,5 @@
 name: cljds
-description: A sample command-line application.
+description: ClojureDart project generation made using ClojureDart
 version: 1.0.0
 homepage: https://github.com/ampersanda/clojuredart-cli
 

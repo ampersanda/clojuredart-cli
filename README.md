@@ -2,13 +2,13 @@
 
 ClojureDart Project Generation made using ClojureDart
 
-to make executable
 
+Install
 ```shell
-$ clj -M -m cljd.build compile && dart compile exe -o cljds bin/cljds.dart && dart pub global activate --source path .
+$ dart pub global activate cljds
 ```
 
-and run (from anywhere)
+and create project
 
 ```shell
 $ cljds projectname
