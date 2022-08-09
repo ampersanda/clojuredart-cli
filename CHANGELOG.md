@@ -1,3 +1,6 @@
+## 1.0.5
+- Simplify README
+
 ## 1.0.4 🔥
 - [Breaking changes] add `dart` command when making plain dart project
 - Allow `_` and `-` name in project name
