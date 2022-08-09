@@ -1,3 +1,6 @@
+## 
+- Change run-publish.sh script
+
 ## 1.0.5
 - Simplify README
 
