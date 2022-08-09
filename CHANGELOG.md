@@ -1,5 +1,6 @@
-## 
+## 1.0.6
 - Change run-publish.sh script
+- Republish 1.0.5 to remove unnecessary build files
 
 ## 1.0.5
 - Simplify README
