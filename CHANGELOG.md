@@ -1,3 +1,8 @@
+## 1.1.0
+- Add pub badge
+- Add common troubleshooting for dart
+- Add Flutter Support
+
 ## 1.0.6
 - Change run-publish.sh script
 - Republish 1.0.5 to remove unnecessary build files

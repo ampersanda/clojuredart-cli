@@ -1,7 +1,8 @@
 (ns cljds.core
   (:require ["dart:io" :refer [exit]]
             [cljds.utils.std :refer [!!]]
-            [cljds.generators.dart :as gdart]))
+            [cljds.generators.dart :as gdart]
+            [cljds.generators.flutter :as gflutter]))
 
 (defn main [arguments]
   ;; when no commands
@@ -14,4 +15,5 @@
         name (second arguments)]
     (condp = cmd
       "dart" (gdart/generate name)
+      "flutter" (gflutter/generate name)
       "nope")))

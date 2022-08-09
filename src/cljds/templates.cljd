@@ -17,3 +17,31 @@
      (.writeln stdout \"hello, world\")
      (.writeln stdout args)
      (.writeln stdout (nil? (seq args))))")
+
+(def flutter-edn-tpl
+  "{:paths [\"src\"] ; where your cljd files are
+    :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
+           tensegritics/clojuredart
+           {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
+            :sha \"CLJD_SHA\"}}
+    :aliases {:cljd {:main-opts [\"-m\" \"cljd.build\"]}}
+    :cljd/opts {:kind :flutter
+                :main NAMESPACE}}")
+
+(def flutter-main-tpl
+  "(ns NAMESPACE
+     (:require [\"package:flutter/material.dart\" :as m]))
+
+   (defn main []
+     (m/runApp
+       (m/MaterialApp
+        .title \"Welcome to Flutter\"
+        .theme (m/ThemeData .primarySwatch m.Colors/pink)
+        .home (m/Scaffold
+           .appBar (m/AppBar
+                    .title (m/Text \"Welcome to ClojureDart\"))
+           .body   (m/Center
+                    .child (m/Text \"This text is Centered.\"
+                                   .style (m/TextStyle
+                                           .color m.Colors/red
+                                           .fontSize 32.0)))))))")

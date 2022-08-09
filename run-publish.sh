@@ -2,6 +2,8 @@
 
 # remove lib folder to avoid removed files to be still included
 rm -rf lib
+rm -rf quickstart
+rm -rf quickstart_flutter
 
 # compile cljd to dart
 clj -M -m cljd.build compile
