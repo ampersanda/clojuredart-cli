@@ -1,4 +1,9 @@
-## 1.1.0
+## 1.1.1
+- Add example folder
+- Add .gitattribute for cljd files preview
+- Change project description
+
+## 1.1.0 
 - Add pub badge
 - Add common troubleshooting for dart
 - Add Flutter Support
