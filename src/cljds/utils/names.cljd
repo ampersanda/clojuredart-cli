@@ -1,0 +1,6 @@
+(ns cljds.utils.names
+  (:require [clojure.string :refer [replace]]))
+
+(defn names [name]
+  {:name (replace name #"_" "-")
+   :dir  (replace name #"-" "_")})

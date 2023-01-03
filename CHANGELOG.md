@@ -1,3 +1,6 @@
+## 1.1.2
+- Fix dart project generation, adding :kind on deps.edn
+
 ## 1.1.1
 - Add example folder
 - Add .gitattribute for cljd files preview

@@ -1,0 +1,44 @@
+(ns cljds.generators.core
+  (:require ["dart:io" :refer [exit]]
+            [cljds.utils.names :refer [names]]
+            [cljds.consts :refer [sha-url]]
+            [clojure.string :as string]
+            [cljds.utils.std :refer [>> !!]]
+            ["package:http/http.dart" :as http]))
+
+(defn- valid? [project-name]
+  (re-matches #"([A-Za-z\-\_]+)" project-name))
+
+(defn latest-sha
+  "Getting available latest SHA from ClojureDart repository"
+  []
+  (try
+    (let [client       (http/Client)
+          content      (await (.get client sha-url))
+          status-code  (.-statusCode content)]
+
+      (>> (str "Getting latest version from " (.toString sha-url)))
+
+      (if (= status-code 200)
+        (let [result (filter (fn [e] (seq e)) (string/split-lines (.-body content)))
+              latest (last result)]
+          (>> (str "Using " latest))
+          latest)
+        (>> "Failed getting latest")))
+    (catch
+     #_{:clj-kondo/ignore [:unresolved-symbol]}
+     dynamic e
+     (!! (str "Failed getting latest sha -> " e)))))
+
+(defn generate
+  "Validate and generate project. gen-fn has two params signature, insist of project name and directory name"
+  [project-name gen-fn]
+  (let [{:keys [name dir]} (names project-name)]
+    (cond
+      (and (valid? name) (valid? dir))
+      (gen-fn name dir)
+
+      :else
+      (do
+        (!! "Wrong namespace format. e.g. cljds dart projectname")
+        (exit 2)))))

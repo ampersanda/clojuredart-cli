@@ -6,7 +6,8 @@
            tensegritics/clojuredart
            {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
             ; or  \"https://github.com/tensegritics/ClojureDart.git\"
-            :sha \"CLJD_SHA\"}}}")
+            :sha \"CLJD_SHA\"}}
+    :cljd/opts {:kind :dart}}")
 
 (def dart-main-tpl
   "(ns NAMESPACE
