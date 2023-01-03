@@ -13,7 +13,9 @@
 
     ;; initialize deps.edn
     (let [edn-file  (await (io/mkfile (str dir-name "/deps.edn")))
-          content   (string/replace dart-edn-tpl #"CLJD_SHA" sha)]
+          content   (-> dart-edn-tpl
+                        (string/replace #"CLJD_SHA" sha)
+                        (string/replace #"NAMESPACE" namespace))]
       (await (.writeAsString edn-file content)))
 
     ;; add main file
@@ -23,10 +25,10 @@
       (await (.writeAsString main-file content)))
 
     ;; clj -M -m cljd.build init --dart namespace
-    (>> (str "Running clj -M -m cljd.build init --dart " namespace))
+    (>> (str "Running clj -M:cljd init " namespace))
 
     (let [result (await
-                  (.run Process "clj" ["-M" "-m" "cljd.build" "init" "--dart" namespace] .workingDirectory dir-name))]
+                  (.run Process "clj" ["-M:cljd" "init" namespace] .workingDirectory dir-name))]
       (>> (.-stdout result))
       (!! (.-stderr result)))
 

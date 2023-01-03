@@ -7,7 +7,9 @@
            {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
             ; or  \"https://github.com/tensegritics/ClojureDart.git\"
             :sha \"CLJD_SHA\"}}
-    :cljd/opts {:kind :dart}}")
+    :aliases {:cljd {:main-opts [\"-m\" \"cljd.build\"]}}
+    :cljd/opts {:kind :dart
+                :main NAMESPACE}}")
 
 (def dart-main-tpl
   "(ns NAMESPACE

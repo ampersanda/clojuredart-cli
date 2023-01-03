@@ -1,3 +1,6 @@
+## 1.1.3
+- Update Dart's deps.edn template to add :aliases 
+
 ## 1.1.2
 - Fix dart project generation, adding :kind on deps.edn
 
