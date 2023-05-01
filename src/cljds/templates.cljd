@@ -12,14 +12,10 @@
                 :main NAMESPACE}}")
 
 (def dart-main-tpl
-  "(ns NAMESPACE
-     (:require [\"dart:io\" :refer [stdout exitCode]]))
+  "(ns NAMESPACE)
 
-   (defn main [args]
-     (set! exitCode 0)
-     (.writeln stdout \"hello, world\")
-     (.writeln stdout args)
-     (.writeln stdout (nil? (seq args))))")
+   (defn main []
+     (print \"hello, world\\n\"))")
 
 (def flutter-edn-tpl
   "{:paths [\"src\"] ; where your cljd files are
