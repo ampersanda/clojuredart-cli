@@ -4,6 +4,7 @@
 rm -rf lib
 rm -rf example/quickstart
 rm -rf example/quickstart_flutter
+rm -rf example/hello_world
 
 # compile cljd to dart
 clj -M:cljd compile
