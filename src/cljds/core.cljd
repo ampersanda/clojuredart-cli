@@ -1,19 +1,19 @@
 (ns cljds.core
-  (:require ["dart:io" :refer [exit]]
-            [cljds.utils.std :refer [!!]]
-            [cljds.generators.dart :as gdart]
-            [cljds.generators.flutter :as gflutter]))
+    (:require
+      ["dart:io" :refer [exit]]
+      [cljds.utils.std :refer [err]]
+      [cljds.generators.dart :as dart]
+      [cljds.generators.flutter :as flutter]))
 
 (defn main [arguments]
-  ;; when no commands
-  (when (nil? (seq arguments))
-    (!! "Command is required. e.g. cljds dart")
-    (exit 2))
+      ;; when no commands
+      (when (nil? (seq arguments))
+            (err "Project type is required. \n\nfor Dart only based project:\n$ cljds dart project_name\n\nfor Flutter based project:\n$ cljds flutter project_name")
+            (exit 2))
 
-  ;; when command only
-  (let [cmd (first arguments)
-        name (second arguments)]
-    (condp = cmd
-      "dart" (gdart/generate name)
-      "flutter" (gflutter/generate name)
-      "nope")))
+      ;; when command only
+      (let [[cmd name] arguments]
+           (condp = cmd
+                  "dart" (dart/generate name)
+                  "flutter" (flutter/generate name)
+                  "nope")))

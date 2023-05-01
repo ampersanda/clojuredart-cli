@@ -2,11 +2,11 @@
     (:require ["dart:io" :refer [Directory File]]))
 
 (defn ^Directory mkdir [path & args]
-  (let [opts      (apply hash-map args)
-        recursive (true? (:recursive opts))]
-    (-> (Directory path) (.create .recursive recursive) await)))
+      (let [opts (apply hash-map args)
+            recursive (true? (:recursive opts))]
+           (-> (Directory path) (.create .recursive recursive) await)))
 
 (defn ^File mkfile [path & args]
-  (let [opts      (apply hash-map args)
-        recursive (true? (:recursive opts))]
-    (-> (File path) (.create .recursive recursive) await)))
+      (let [opts (apply hash-map args)
+            recursive (true? (:recursive opts))]
+           (-> (File path) (.create .recursive recursive) await)))

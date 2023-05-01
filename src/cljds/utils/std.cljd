@@ -1,8 +1,8 @@
 (ns cljds.utils.std
     (:require ["dart:io" :refer [stdout stderr]]))
 
-(defn >> [text]
-  (.writeln stdout text))
+(defn out [text]
+      (.writeln stdout text))
 
-(defn !! [text]
-  (.writeln stderr text))
+(defn err [text]
+      (.writeln stderr text))
