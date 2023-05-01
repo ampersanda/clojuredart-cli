@@ -1,5 +1,4 @@
-{:paths     ["src"]
- ; where your cljd files will live
+{:paths     ["src"]                                         ; where your cljd files will live
  :deps      {org.clojure/clojure {:mvn/version "1.10.1"}
              tensegritics/clojuredart
              {:git/url "git@github.com:tensegritics/ClojureDart.git"

@@ -1,3 +1,8 @@
+import 'package:cljds/cljds.dart';
 import 'package:test/test.dart';
 
-void main() {}
+void main() {
+  test('calculate', () {
+    expect(calculate(), 42);
+  });
+}

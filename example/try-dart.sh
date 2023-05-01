@@ -3,7 +3,7 @@
 rm -rf quickstart
 
 cd ..
-clj -M -m cljd.build compile
+clj -M:cljd compile
 
 cd example || exit
 

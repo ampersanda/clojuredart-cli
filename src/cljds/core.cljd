@@ -1,19 +1,35 @@
 (ns cljds.core
     (:require
       ["dart:io" :refer [exit]]
-      [cljds.utils.std :refer [err]]
+      [cljds.utils.log :refer [err logger]]
       [cljds.generators.dart :as dart]
-      [cljds.generators.flutter :as flutter]))
+      [cljds.generators.flutter :as flutter]
+      [cljds.utils.names :as names]))
+
+(defn select-type []
+      (.chooseOne logger "Select project type:" .choices ["Dart" "Flutter"]))
+
+(defn input-name []
+      (let [prompt (.prompt logger "Project name:" .defaultValue "hello_world")]
+           (if (names/valid? prompt)
+             prompt
+             (do
+               (err "Invalid project name! Only alphabet, underscore and dash are allowed.")
+               (input-name)))))
+
+(defn generate [type name]
+      (condp = type
+             "dart" (dart/generate name)
+             "flutter" (flutter/generate name)
+             "nope"))
 
 (defn main [arguments]
-      ;; when no commands
-      (when (nil? (seq arguments))
-            (err "Project type is required. \n\nfor Dart only based project:\n$ cljds dart project_name\n\nfor Flutter based project:\n$ cljds flutter project_name")
-            (exit 2))
-
-      ;; when command only
-      (let [[cmd name] arguments]
-           (condp = cmd
-                  "dart" (dart/generate name)
-                  "flutter" (flutter/generate name)
-                  "nope")))
+      (if
+        ;; when no commands provided
+        (nil? (seq arguments))
+        (let [type (clojure.string/lower-case (select-type))
+              name (input-name)]
+             (generate type name))
+        ;; proceed directly
+        (let [[type name] arguments]
+             (generate type name))))

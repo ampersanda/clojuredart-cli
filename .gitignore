@@ -5,9 +5,11 @@
 # Conventional directory for build output.
 build/
 
-.idea
-.cpcache
-.clojuredart
+# ClojureDart
+.cpcache/
+.clojuredart/
+lib/
+test/cljd-out/
 .clj-kondo
 .lsp
 quickstart
@@ -15,4 +17,5 @@ quickstart_flutter
 
 # Comment for "dart pub publish"
 bin
-lib
+
+.idea

@@ -15,7 +15,7 @@
   "(ns NAMESPACE)
 
    (defn main []
-     (print \"hello, world\\n\"))")
+     (print \"hello, world\"))")
 
 (def flutter-edn-tpl
   "{:paths [\"src\"] ; where your cljd files are

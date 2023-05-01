@@ -4,3 +4,6 @@
 (defn names [name]
       {:name (replace name #"_" "-")
        :dir  (replace name #"-" "_")})
+
+(defn valid? [name]
+       (re-matches #"([A-Za-z\-\_]+)" name))

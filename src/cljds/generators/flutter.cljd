@@ -6,11 +6,11 @@
       [cljds.consts :refer [flutter-docs-url]]
       [clojure.string :as string]
       [cljds.templates :refer [flutter-edn-tpl flutter-main-tpl]]
-      [cljds.utils.std :refer [out err]]))
+      [cljds.utils.log :refer [info err]]))
 
 (defn- make-files [sha dir-name namespace]
        (let [dir (await (io/mkdir dir-name))]
-            (out (str "Creating \"" (.-path dir) "\" project"))
+            (info (str "Creating \"" (.-path dir) "\" project"))
 
             ;; initialize deps.edn
             (let [edn-file (await (io/mkfile (str dir-name "/deps.edn")))
@@ -26,11 +26,11 @@
                  (await (.writeAsString main-file content)))
 
             ;; clj -M -m cljd.build init --dart namespace
-            (out (str "Running clj -M:cljd init " namespace))
+            (info (str "Running clj -M:cljd init " namespace))
 
             (let [result (await
                            (.run Process "clj" ["-M:cljd" "init"] .workingDirectory dir-name))]
-                 (out (.-stdout result))
+                 (info (.-stdout result))
                  (err (.-stderr result)))
 
             ;; creating src dirs
@@ -42,10 +42,9 @@
        (let [namespace (str name ".core")
              sha (await (cgen/latest-sha))]
             (await (make-files sha dir-name namespace))
-            (out (str "Project " namespace " created successfully! \n"))
-            (out
-              (str "To run \n\n$ cd " dir-name " && clj -M:cljd flutter\n"))
-            (out (str "Read more " flutter-docs-url))
+            (info (str "Project " namespace " created!\n"))
+            (info (str "To run \n$ cd " dir-name " && clj -M:cljd flutter"))
+            (info (str "Read more " flutter-docs-url))
             (exit 0)))
 
 (defn generate [name]
