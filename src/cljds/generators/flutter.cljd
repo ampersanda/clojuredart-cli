@@ -6,35 +6,38 @@
       [cljds.consts :refer [flutter-docs-url]]
       [clojure.string :as string]
       [cljds.templates :refer [flutter-edn-tpl flutter-main-tpl]]
-      [cljds.utils.log :refer [info err]]))
+      [cljds.utils.log :refer [info err logger detail]]))
 
 (defn- make-files [sha dir-name namespace]
        (let [dir (await (io/mkdir dir-name))]
-            (info (str "Creating \"" (.-path dir) "\" project"))
+            (let [loading (.progress logger (str "Creating '" (.-path dir) "' project"))]
+                 ;; initialize deps.edn
+                 (let [edn-file (await (io/mkfile (str dir-name "/deps.edn")))
+                       content (-> flutter-edn-tpl
+                                   (string/replace #"CLJD_SHA" sha)
+                                   (string/replace #"NAMESPACE" namespace))]
+                      (await (.writeAsString edn-file content)))
 
-            ;; initialize deps.edn
-            (let [edn-file (await (io/mkfile (str dir-name "/deps.edn")))
-                  content (-> flutter-edn-tpl
-                              (string/replace #"CLJD_SHA" sha)
-                              (string/replace #"NAMESPACE" namespace))]
-                 (await (.writeAsString edn-file content)))
+                 (.complete loading (str "Project '" (.-path dir) "' created!")))
 
-            ;; add main file
-            (let [main-file (await
-                              (io/mkfile (str dir-name "/src/" dir-name "/core.cljd") :recursive true))
+            (let [loading (.progress logger (str "Making core file project"))
+                  path (str dir-name "/src/" dir-name "/core.cljd")
+                  main-file (await (io/mkfile path :recursive true))
                   content (string/replace flutter-main-tpl #"NAMESPACE" namespace)]
-                 (await (.writeAsString main-file content)))
+                 ;; add main file
+                 (await (.writeAsString main-file content))
+                 (.complete loading (str "Core file '" path "' created!")))
 
-            ;; clj -M -m cljd.build init --dart namespace
-            (info (str "Running clj -M:cljd init " namespace))
-
-            (let [result (await
+            (let [loading (.progress logger (str "Initializing project"))
+                  result (await
                            (.run Process "clj" ["-M:cljd" "init"] .workingDirectory dir-name))]
-                 (info (.-stdout result))
-                 (err (.-stderr result)))
+                 (await (io/mkdir (str dir-name "/src/" dir-name) :recursive true))
+                 (.complete loading "Project initialized!")
 
-            ;; creating src dirs
-            (await (io/mkdir (str dir-name "/src/" dir-name) :recursive true))))
+                 (if (nil? (.-stderr result))
+                   (detail (str "\n" (.-stdout result)))
+                   (detail (str "\n" (.-stderr result)))))
+            ))
 
 (defn- flutter-gen
        "Generate flutter project -> https://github.com/Tensegritics/ClojureDart/blob/main/doc/flutter-quick-start.md"
@@ -42,9 +45,13 @@
        (let [namespace (str name ".core")
              sha (await (cgen/latest-sha))]
             (await (make-files sha dir-name namespace))
-            (info (str "Project " namespace " created!\n"))
-            (info (str "To run \n$ cd " dir-name " && clj -M:cljd flutter"))
+
+            (info "To run")
+            (info (str "$ cd " dir-name))
+            (info "$ clj -M:cljd flutter")
+            (info "")
             (info (str "Read more " flutter-docs-url))
+
             (exit 0)))
 
 (defn generate [name]
