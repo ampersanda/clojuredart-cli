@@ -16,6 +16,12 @@ $ dart pub global activate cljds
 
 ## Usage
 
+TLDR; (with selection and input)
+
+```shell
+$ cljds
+```
+
 Creating plain dart project
 
 ```shell

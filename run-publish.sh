@@ -6,7 +6,7 @@ rm -rf example/quickstart
 rm -rf example/quickstart_flutter
 
 # compile cljd to dart
-clj -M -m cljd.build compile
+clj -M:cljd compile
 
 # uncomment to reset ignores
 sed -i '' 's|#lib|lib|g' .gitignore
