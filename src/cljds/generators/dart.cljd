@@ -45,8 +45,12 @@
        (let [namespace (str name ".core")
              sha (await (cgen/latest-sha))]
             (await (make-files sha dir-name namespace))
-            (info
-              (str "To run \n$ cd " dir-name " && clj -M -m cljd.build compile && dart run bin/" dir-name ".dart\n"))
+
+            (info "To run")
+            (info (str "$ cd " dir-name))
+            (info "$ clj -M:cljd compile")
+            (info (str "$ dart run bin/" dir-name ".dart"))
+            (info "")
             (info (str "Read more " dart-docs-url))
             (exit 0)))
 
