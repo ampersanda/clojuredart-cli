@@ -1,3 +1,4 @@
-## 1.0.0
+## 1.2.0
 
-- Initial version.
+- Using `mason_logger`
+- Migrate `dart` and `flutter` command
