@@ -4,7 +4,7 @@ version: 1.2.0
 homepage: https://github.com/ampersanda/clojuredart-cli
 
 environment:
-  sdk: '>=2.18.0 <3.0.0'
+  sdk: '>=2.18.0-edge.572f24882f2c344f9f95b14091a7ac2cb142f9de <3.0.0'
 
 executables:
   cljds:
