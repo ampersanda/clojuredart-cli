@@ -21,7 +21,9 @@
       (condp = type
              "dart" (dart/generate name)
              "flutter" (flutter/generate name)
-             "nope"))
+             (do
+              (err (str "Project type '" type "' is not available."))
+              (main nil))))
 
 (defn main [arguments]
       (if
