@@ -1,11 +1,10 @@
 (ns cljds.generators.core
   (:require
-    ["dart:io" :refer [exit]]
     [cljds.utils.names :refer [names]]
     [cljds.consts :refer [sha-url]]
     [clojure.string :as string]
-    [cljds.utils.log :refer [info err logger]]
-    ["package:http/http.dart" :as http]))
+    [cljds.utils.log :refer [err logger]]
+    ["package:http/http.dart" :refer [Client]]))
 
 (defn latest-sha
   "Getting available latest SHA from ClojureDart repository"
@@ -13,7 +12,7 @@
 
   (let [loading (.progress logger (str "Getting latest version from " (.toString sha-url)))]
     (try
-      (let [client (http/Client)
+      (let [client (Client)
             content (await (.get client sha-url))
             status-code (.-statusCode content)]
 

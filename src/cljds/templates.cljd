@@ -1,34 +1,31 @@
-(ns cljds.templates)
+(ns cljds.templates
+  (:require [clojure.string :as string]))
 
-(def dart-edn-tpl
-  "{:paths [\"src\"] ; where your cljd files will live
+(defn edn [type sha namespace]
+  (when (keyword? type)
+    (-> "{:paths [\"src\"] ; where your cljd files will live
     :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
            tensegritics/clojuredart
            {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
             ; or  \"https://github.com/tensegritics/ClojureDart.git\"
             :sha \"CLJD_SHA\"}}
     :aliases {:cljd {:main-opts [\"-m\" \"cljd.build\"]}}
-    :cljd/opts {:kind :dart
-                :main NAMESPACE}}")
+    :cljd/opts {:kind PROJECT_TYPE
+                :main NAMESPACE}}"
+        (string/replace #"PROJECT_TYPE" (str type))
+        (string/replace #"CLJD_SHA" sha)
+        (string/replace #"NAMESPACE" namespace))))
 
-(def dart-main-tpl
-  "(ns NAMESPACE)
+
+(defn dart-main [namespace]
+  (-> "(ns NAMESPACE)
 
    (defn main []
-     (print \"hello, world\"))")
+     (print \"hello, world\"))"
+      (string/replace #"NAMESPACE" namespace)))
 
-(def flutter-edn-tpl
-  "{:paths [\"src\"] ; where your cljd files are
-    :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
-           tensegritics/clojuredart
-           {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
-            :sha \"CLJD_SHA\"}}
-    :aliases {:cljd {:main-opts [\"-m\" \"cljd.build\"]}}
-    :cljd/opts {:kind :flutter
-                :main NAMESPACE}}")
-
-(def flutter-main-tpl
-  "(ns NAMESPACE
+(defn flutter-main [namespace]
+  (-> "(ns NAMESPACE
      (:require [\"package:flutter/material.dart\" :as m]))
 
    (defn main []
@@ -43,4 +40,5 @@
                     .child (m/Text \"This text is Centered.\"
                                    .style (m/TextStyle
                                            .color m.Colors/red
-                                           .fontSize 32.0)))))))")
+                                           .fontSize 32.0)))))))"
+      (string/replace #"NAMESPACE" namespace)))

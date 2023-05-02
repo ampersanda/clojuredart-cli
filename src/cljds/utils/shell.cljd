@@ -1,0 +1,5 @@
+(ns cljds.utils.shell
+  (:require ["dart:io" :refer [Process]]))
+
+(defmacro run [& body]
+  `(.run Process ~@body))

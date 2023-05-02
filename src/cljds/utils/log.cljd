@@ -1,15 +1,16 @@
 (ns cljds.utils.log
-  (:require
-    ["dart:io" :refer [stdout stderr]]
-    ["package:mason_logger/mason_logger.dart" :as mlog]))
+  (:require ["package:mason_logger/mason_logger.dart" :refer [Logger Level]]))
 
-(def logger (mlog/Logger .level mlog.Level/verbose))
+(def logger (Logger .level Level/verbose))
 
-(defn info [text]
-  (.info logger text))
+(defn info [& texts]
+  (doseq [text texts]
+    (.info logger text)))
 
-(defn detail [text]
-  (.detail logger text))
+(defn detail [& texts]
+  (doseq [text texts]
+    (.detail logger text)))
 
-(defn err [text]
-  (.err logger text))
+(defn err [& texts]
+  (doseq [text texts]
+    (.err logger text)))

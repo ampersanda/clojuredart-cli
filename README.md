@@ -4,9 +4,11 @@
 
 ClojureDart Project Generation made using ClojureDart, based on steps from 
 
-dart: https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md.
+Dart
+> https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md.
 
-flutter: https://github.com/Tensegritics/ClojureDart/blob/main/doc/flutter-quick-start.md
+Flutter
+> https://github.com/Tensegritics/ClojureDart/blob/main/doc/flutter-quick-start.md
 
 ## Installing
 
@@ -22,16 +24,11 @@ TLDR; (with selection and input)
 $ cljds
 ```
 
-Creating plain dart project
+You can also use arguments to create project 
 
 ```shell
-$ cljds dart project-name 
-```
-
-Creating flutter project
-
-```shell
-$ cljds flutter project-name 
+$ cljds dart project-name # for plain Dart project
+$ cljds flutter project-name # for Flutter project
 ```
 
 ## Troubleshooting
@@ -61,3 +58,30 @@ To solve this, replace `sdk` inside `pubspec.yaml` to
 ```yaml
 sdk: '>=2.17.3 <3.0.0'
 ```
+
+---
+
+- "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" error
+
+```shell
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED! @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that a host key has just been changed.
+The fingerprint for the RSA key sent by the remote host is
+SHA256:uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s.
+Please contact your system administrator.
+Add correct host key in ~/.ssh/known_hosts to get rid of this message.
+Host key for github.com has changed and you have requested strict checking.
+Host key verification failed.
+```
+
+To solve this, remove old key by running 
+
+```bash
+$ ssh-keygen -R github.com
+```
+
+Read more: https://github.blog/2023-03-23-we-updated-our-rsa-ssh-host-key/

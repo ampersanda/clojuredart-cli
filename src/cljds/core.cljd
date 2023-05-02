@@ -1,6 +1,5 @@
 (ns cljds.core
   (:require
-    ["dart:io" :refer [exit]]
     [cljds.utils.log :refer [err logger]]
     [cljds.generators.dart :as dart]
     [cljds.generators.flutter :as flutter]
@@ -17,21 +16,27 @@
         (err "Invalid project name! Only alphabet, underscore and dash are allowed.")
         (input-name)))))
 
-(defn generate [type name]
+(defn generate [type project-name]
   (condp = type
-    "dart" (dart/generate name)
-    "flutter" (flutter/generate name)
+    :dart (dart/generate project-name)
+    :flutter (flutter/generate project-name)
     (do
-      (err (str "Project type '" type "' is not available."))
-      (main nil))))
+      (err (str "Project type '" (name type) "' is not available."))
+      (let [type (-> (select-type)
+                     clojure.string/lower-case
+                     keyword)
+            name (input-name)]
+        (generate type name)))))
 
 (defn main [arguments]
   (if
     ;; when no commands provided
     (nil? (seq arguments))
-    (let [type (clojure.string/lower-case (select-type))
-          name (input-name)]
-      (generate type name))
+    (let [type (-> (select-type)
+                   clojure.string/lower-case
+                   keyword)
+          project-name (input-name)]
+      (generate type project-name))
     ;; proceed directly
-    (let [[type name] arguments]
-      (generate type name))))
+    (let [[type project-name] arguments]
+      (generate (keyword type) project-name))))

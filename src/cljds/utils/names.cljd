@@ -1,9 +1,8 @@
-(ns cljds.utils.names
-    (:require [clojure.string :refer [replace]]))
+(ns cljds.utils.names)
 
 (defn names [name]
-      {:name (replace name #"_" "-")
-       :dir  (replace name #"-" "_")})
+  {:name (clojure.string/replace name #"_" "-")
+   :dir  (clojure.string/replace name #"-" "_")})
 
 (defn valid? [name]
-       (re-matches #"([A-Za-z\-\_]+)" name))
+  (re-matches #"([A-Za-z\-\_]+)" name))
