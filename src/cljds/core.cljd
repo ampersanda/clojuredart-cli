@@ -1,37 +1,37 @@
 (ns cljds.core
-    (:require
-      ["dart:io" :refer [exit]]
-      [cljds.utils.log :refer [err logger]]
-      [cljds.generators.dart :as dart]
-      [cljds.generators.flutter :as flutter]
-      [cljds.utils.names :as names]))
+  (:require
+    ["dart:io" :refer [exit]]
+    [cljds.utils.log :refer [err logger]]
+    [cljds.generators.dart :as dart]
+    [cljds.generators.flutter :as flutter]
+    [cljds.utils.names :as names]))
 
 (defn select-type []
-      (.chooseOne logger "Select project type:" .choices ["Dart" "Flutter"]))
+  (.chooseOne logger "Select project type:" .choices ["Dart" "Flutter"]))
 
 (defn input-name []
-      (let [prompt (.prompt logger "Project name:" .defaultValue "hello_world")]
-           (if (names/valid? prompt)
-             prompt
-             (do
-               (err "Invalid project name! Only alphabet, underscore and dash are allowed.")
-               (input-name)))))
+  (let [prompt (.prompt logger "Project name:" .defaultValue "hello_world")]
+    (if (names/valid? prompt)
+      prompt
+      (do
+        (err "Invalid project name! Only alphabet, underscore and dash are allowed.")
+        (input-name)))))
 
 (defn generate [type name]
-      (condp = type
-             "dart" (dart/generate name)
-             "flutter" (flutter/generate name)
-             (do
-              (err (str "Project type '" type "' is not available."))
-              (main nil))))
+  (condp = type
+    "dart" (dart/generate name)
+    "flutter" (flutter/generate name)
+    (do
+      (err (str "Project type '" type "' is not available."))
+      (main nil))))
 
 (defn main [arguments]
-      (if
-        ;; when no commands provided
-        (nil? (seq arguments))
-        (let [type (clojure.string/lower-case (select-type))
-              name (input-name)]
-             (generate type name))
-        ;; proceed directly
-        (let [[type name] arguments]
-             (generate type name))))
+  (if
+    ;; when no commands provided
+    (nil? (seq arguments))
+    (let [type (clojure.string/lower-case (select-type))
+          name (input-name)]
+      (generate type name))
+    ;; proceed directly
+    (let [[type name] arguments]
+      (generate type name))))
