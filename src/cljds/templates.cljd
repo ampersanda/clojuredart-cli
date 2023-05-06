@@ -4,14 +4,14 @@
 (defn edn [type sha namespace]
   (when (keyword? type)
     (-> "{:paths [\"src\"] ; where your cljd files will live
-    :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
-           tensegritics/clojuredart
-           {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
-            ; or  \"https://github.com/tensegritics/ClojureDart.git\"
-            :sha \"CLJD_SHA\"}}
-    :aliases {:cljd {:main-opts [\"-m\" \"cljd.build\"]}}
-    :cljd/opts {:kind PROJECT_TYPE
-                :main NAMESPACE}}"
+ :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
+        tensegritics/clojuredart
+        {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
+        ; or  \"https://github.com/tensegritics/ClojureDart.git\"
+        :sha \"CLJD_SHA\"}}
+ :aliases {:cljd {:main-opts [\"-m\" \"cljd.build\"]}}
+ :cljd/opts {:kind PROJECT_TYPE
+             :main NAMESPACE}}"
         (string/replace #"PROJECT_TYPE" (str type))
         (string/replace #"CLJD_SHA" sha)
         (string/replace #"NAMESPACE" namespace))))
@@ -20,25 +20,25 @@
 (defn dart-main [namespace]
   (-> "(ns NAMESPACE)
 
-   (defn main []
-     (print \"hello, world\"))"
+(defn main []
+  (print \"hello, world\"))"
       (string/replace #"NAMESPACE" namespace)))
 
 (defn flutter-main [namespace]
   (-> "(ns NAMESPACE
-     (:require [\"package:flutter/material.dart\" :as m]))
+  (:require [\"package:flutter/material.dart\" :as m]
+            [cljd.flutter :as f]))
 
-   (defn main []
-     (m/runApp
-       (m/MaterialApp
-        .title \"Welcome to Flutter\"
-        .theme (m/ThemeData .primarySwatch m.Colors/pink)
-        .home (m/Scaffold
-           .appBar (m/AppBar
-                    .title (m/Text \"Welcome to ClojureDart\"))
-           .body   (m/Center
-                    .child (m/Text \"This text is Centered.\"
-                                   .style (m/TextStyle
-                                           .color m.Colors/red
-                                           .fontSize 32.0)))))))"
+(defn main []
+  (f/run
+    (m/MaterialApp
+      .title \"Welcome to Flutter\"
+      .theme (m/ThemeData .primarySwatch m.Colors/pink)
+      .home (m/Scaffold
+         .appBar (m/AppBar .title (m/Text \"Welcome to ClojureDart\"))
+         .body   (m/Center
+                  .child (m/Text \"This text is Centered.\"
+                                 .style (m/TextStyle
+                                         .color m.Colors/red
+                                         .fontSize 32.0)))))))"
       (string/replace #"NAMESPACE" namespace)))
