@@ -1,3 +1,20 @@
+## 2.0.0
+- **Breaking**: Requires Dart SDK >=3.0.0
+- Add `--help` / `-h` flag
+- Add `--version` flag
+- Add `-o` / `--output` option for custom output directory
+- Add prerequisite checks (verifies `clj` is on PATH before generation)
+- Add directory overwrite confirmation prompt
+- Add version update check (non-blocking, runs after generation)
+- Redesign template system with `{{placeholder}}` syntax and validation
+- Switch generated `deps.edn` to use HTTPS git URL by default
+- Improve project name validation: allow digits, length constraints, reserved word checks, specific error messages
+- Refactor generators into unified `generate-project` with error recovery and cleanup
+- Improve SHA fetch failure UX with `.fail` progress indicator
+- Add argument parsing via Dart `args` package
+- Handle partial CLI args gracefully (e.g., `cljds dart` prompts for name)
+- Update `http` to ^1.2.0, `mason_logger` to ^0.3.0, `lints` to ^3.0.0, `test` to ^1.25.0
+
 ## 1.3.0
 - Upgrade ClojureDart to `8d5916c0dc87146dc2e8921aaa7fd5dc3c6c3401` to support Dart 3 and Flutter 3.10.0
 
