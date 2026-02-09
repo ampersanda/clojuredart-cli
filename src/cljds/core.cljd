@@ -1,42 +1,84 @@
 (ns cljds.core
   (:require
-    [cljds.utils.log :refer [err logger]]
+    ["dart:io" :refer [exit]]
+    [cljds.cli :as cli]
+    [cljds.utils.log :refer [err info logger]]
+    [cljds.utils.io :as io]
+    [cljds.utils.names :as names]
+    [cljds.generators.core :as gen]
     [cljds.generators.dart :as dart]
     [cljds.generators.flutter :as flutter]
-    [cljds.utils.names :as names]))
+    [cljds.version-check :refer [check-for-update]]))
 
-(defn select-type []
+(defn- select-type []
   (.chooseOne logger "Select project type:" .choices ["Dart" "Flutter"]))
 
-(defn input-name []
-  (let [prompt (.prompt logger "Project name:" .defaultValue "hello_world")]
-    (if (names/valid? prompt)
+(defn- input-name []
+  (let [prompt (.prompt logger "Project name:" .defaultValue "hello_world")
+        error (names/validation-error prompt)]
+    (if (nil? error)
       prompt
       (do
-        (err "Invalid project name! Only alphabet, underscore and dash are allowed.")
+        (err error)
         (input-name)))))
 
-(defn generate [type project-name]
-  (condp = type
-    :dart (dart/generate project-name)
-    :flutter (flutter/generate project-name)
-    (do
-      (err (str "Project type '" (name type) "' is not available."))
+(defn- confirm-overwrite [dir-name]
+  (if (io/exists? dir-name)
+    (.confirm logger (str "Directory '" dir-name "' already exists. Overwrite?")
+              .defaultValue false)
+    true))
+
+(defn- run-generate [project-type project-name opts]
+  (let [{:keys [dir]} (names/names project-name)
+        output (:output opts)
+        dir-name (if output (str output "/" dir) dir)]
+    (when-not (confirm-overwrite dir-name)
+      (info "Aborted.")
+      (exit 0))
+    (let [missing (await (gen/check-prerequisites))]
+      (when (seq missing)
+        (err (str "Missing required tools: " (clojure.string/join ", " missing)))
+        (err "Please install them and try again.")
+        (exit 1)))
+    (condp = project-type
+      :dart (await (dart/generate project-name opts))
+      :flutter (await (flutter/generate project-name opts)))))
+
+(defn main [arguments]
+  (let [parsed (cli/parse-args arguments)]
+    (cond
+      (:help? parsed)
+      (do (info cli/usage-text) (exit 0))
+
+      (:version? parsed)
+      (do (info cli/version-text) (exit 0))
+
+      (:error parsed)
+      (do (err (:error parsed))
+          (info "")
+          (info cli/usage-text)
+          (exit 64))
+
+      (:interactive? parsed)
       (let [type (-> (select-type)
                      clojure.string/lower-case
                      keyword)
-            name (input-name)]
-        (generate type name)))))
+            project-name (input-name)]
+        (await (run-generate type project-name parsed))
+        (await (check-for-update))
+        (exit 0))
 
-(defn main [arguments]
-  (if
-    ;; when no commands provided
-    (nil? (seq arguments))
-    (let [type (-> (select-type)
-                   clojure.string/lower-case
-                   keyword)
-          project-name (input-name)]
-      (generate type project-name))
-    ;; proceed directly
-    (let [[type project-name] arguments]
-      (generate (keyword type) project-name))))
+      (and (:type parsed) (nil? (:name parsed)))
+      (let [project-name (input-name)]
+        (await (run-generate (:type parsed) project-name parsed))
+        (await (check-for-update))
+        (exit 0))
+
+      :else
+      (let [error (names/validation-error (:name parsed))]
+        (when error
+          (err error)
+          (exit 64))
+        (await (run-generate (:type parsed) (:name parsed) parsed))
+        (await (check-for-update))
+        (exit 0)))))
