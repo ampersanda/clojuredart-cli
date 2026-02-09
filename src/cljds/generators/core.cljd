@@ -130,7 +130,12 @@
           dynamic e
           (err (str "Failed to generate project: " e))
           (when (io/exists? dir-name)
-            (let [loading (.progress logger "Cleaning up partial files...")]
-              (await (io/delete-dir dir-name))
-              (.complete loading "Cleaned up.")))
+            (try
+              (let [loading (.progress logger "Cleaning up partial files...")]
+                (await (io/delete-dir dir-name))
+                (.complete loading "Cleaned up."))
+              (catch
+                #_{:clj-kondo/ignore [:unresolved-symbol]}
+                dynamic _
+                (err (str "Warning: could not clean up directory '" dir-name "'. Please remove it manually.")))))
           false)))))

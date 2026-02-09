@@ -35,6 +35,10 @@
     (when-not (confirm-overwrite dir-name)
       (info "Aborted.")
       (exit 0))
+    (when (io/exists? dir-name)
+      (let [loading (.progress logger "Removing existing directory...")]
+        (await (io/delete-dir dir-name))
+        (.complete loading "Existing directory removed.")))
     (let [missing (await (gen/check-prerequisites))]
       (when (seq missing)
         (err (str "Missing required tools: " (clojure.string/join ", " missing)))
