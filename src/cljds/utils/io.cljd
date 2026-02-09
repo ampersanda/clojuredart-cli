@@ -10,3 +10,15 @@
   (let [opts (apply hash-map args)
         recursive (true? (:recursive opts))]
     (-> (File path) (.create .recursive recursive) await)))
+
+(defn exists?
+  "Check if a directory exists at the given path."
+  [path]
+  (.existsSync (Directory path)))
+
+(defn delete-dir
+  "Recursively delete a directory at the given path."
+  [path]
+  (let [dir (Directory path)]
+    (when (.existsSync dir)
+      (await (.delete dir .recursive true)))))

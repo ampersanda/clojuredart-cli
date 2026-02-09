@@ -1,8 +1,44 @@
-(ns cljds.utils.names)
+(ns cljds.utils.names
+  (:require [clojure.string :as string]))
 
-(defn names [name]
-  {:name (clojure.string/replace name #"_" "-")
-   :dir  (clojure.string/replace name #"-" "_")})
+(def ^:private max-length 64)
+
+(def ^:private reserved-words
+  #{"test" "lib" "bin" "src" "build" "tool"
+    "abstract" "as" "assert" "async" "await" "break" "case" "catch"
+    "class" "const" "continue" "covariant" "default" "deferred" "do"
+    "dynamic" "else" "enum" "export" "extends" "extension" "external"
+    "factory" "false" "final" "finally" "for" "function" "get" "hide"
+    "if" "implements" "import" "in" "interface" "is" "late" "library"
+    "mixin" "new" "null" "on" "operator" "part" "required" "rethrow"
+    "return" "sealed" "set" "show" "static" "super" "switch" "sync"
+    "this" "throw" "true" "try" "typedef" "var" "void" "when" "while"
+    "with" "yield"})
+
+(defn validation-error
+  "Returns a specific error message for the given name, or nil if valid."
+  [name]
+  (cond
+    (or (nil? name) (= "" name))
+    "Project name cannot be empty."
+
+    (> (count name) max-length)
+    (str "Project name is too long (max " max-length " characters).")
+
+    (not (re-matches #"[A-Za-z].*" name))
+    "Project name must start with a letter."
+
+    (not (re-matches #"[A-Za-z][A-Za-z0-9\-\_]*" name))
+    "Project name contains invalid characters. Only letters, digits, hyphens, and underscores are allowed."
+
+    (contains? reserved-words (string/lower-case (string/replace name #"[-_]" "")))
+    (str "'" name "' is a reserved word and cannot be used as a project name.")
+
+    :else nil))
 
 (defn valid? [name]
-  (re-matches #"([A-Za-z\-\_]+)" name))
+  (nil? (validation-error name)))
+
+(defn names [name]
+  {:name (string/replace name #"_" "-")
+   :dir  (string/replace name #"-" "_")})
