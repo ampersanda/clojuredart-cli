@@ -1,3 +1,6 @@
+## 2.0.1
+- Fix `clj -M:cljd init` failure not detected: exit code is now checked and errors are properly reported with cleanup
+
 ## 2.0.0
 - **Breaking**: Requires Dart SDK >=3.0.0
 - Add `--help` / `-h` flag

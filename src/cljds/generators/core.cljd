@@ -96,10 +96,18 @@
           result (await
                    (shell/run "clj" ["-M:cljd" "init"] .workingDirectory dir-name))]
       (await (io/mkdir (str dir-name "/src/" dir-name) :recursive true))
-      (.complete loading "Project initialized!")
-      (if (nil? (.-stderr result))
-        (.detail logger (str "\n" (.-stdout result)))
-        (.detail logger (str "\n" (.-stderr result)))))))
+      (if (= 0 (.-exitCode result))
+        (do
+          (.complete loading "Project initialized!")
+          (let [output (.-stdout result)]
+            (when (seq output)
+              (.detail logger (str "\n" output)))))
+        (do
+          (.fail loading "Failed to initialize project!")
+          (let [stderr (.-stderr result)]
+            (when (seq stderr)
+              (.detail logger (str "\n" stderr))))
+          (throw (Exception. (str "clj -M:cljd init failed (exit code " (.-exitCode result) ")"))))))))
 
 (defn generate-project
   "Unified project generation. Returns true on success, false on failure."
