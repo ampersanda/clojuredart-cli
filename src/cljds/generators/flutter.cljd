@@ -41,6 +41,9 @@
   [name dir-name]
   (let [namespace (str name ".core")
         sha (await (gen/latest-sha))]
+    (when (nil? sha)
+      (err "No valid SHA available. Cannot generate project.")
+      (exit 1))
     (await (make-files sha dir-name namespace))
 
     (info

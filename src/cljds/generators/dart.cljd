@@ -4,7 +4,7 @@
     [cljds.consts :refer [dart-docs-url]]
     [cljds.utils.io :as io]
     [cljds.templates :refer [edn dart-main]]
-    [cljds.utils.log :refer [info logger detail]]
+    [cljds.utils.log :refer [info err logger detail]]
     [cljds.generators.core :as gen]
     [cljds.utils.shell :as shell]))
 
@@ -42,6 +42,9 @@
   [name dir-name]
   (let [namespace (str name ".core")
         sha (await (gen/latest-sha))]
+    (when (nil? sha)
+      (err "No valid SHA available. Cannot generate project.")
+      (exit 1))
     (await (make-files sha dir-name namespace))
 
     (info

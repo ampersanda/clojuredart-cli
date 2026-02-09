@@ -1,33 +1,62 @@
 (ns cljds.generators.core
   (:require
+    ["dart:io" :refer [exit]]
     [cljds.utils.names :refer [names]]
-    [cljds.consts :refer [sha-url]]
+    [cljds.consts :refer [sha-url fallback-sha]]
     [clojure.string :as string]
     [cljds.utils.log :refer [err logger]]
     ["package:http/http.dart" :refer [Client]]))
 
-(defn latest-sha
-  "Getting available latest SHA from ClojureDart repository"
+(defn valid-sha?
+  "Check if sha is a 40-character hex string"
+  [sha]
+  (and (some? sha)
+       (re-matches #"^[0-9a-f]{40}$" sha)))
+
+(defn- fetch-sha
+  "Fetch latest SHA from ClojureDart repository. Returns nil on failure."
   []
-
-  (let [loading (.progress logger (str "Getting latest version from " (.toString sha-url)))]
+  (let [client (Client)]
     (try
-      (let [client (Client)
-            content (await (.get client sha-url))
+      (let [content (await (.get client sha-url))
             status-code (.-statusCode content)]
-
         (if (= status-code 200)
           (let [result (filter (fn [e] (seq e)) (string/split-lines (.-body content)))
                 latest (last result)]
-
-            (.complete loading (str "Using " latest))
-            latest)
-          (throw (Exception.))))
+            (when (valid-sha? latest)
+              latest))
+          nil))
       (catch
         #_{:clj-kondo/ignore [:unresolved-symbol]}
-        dynamic e
-        (err (str "Failed getting latest sha -> " e))
-        (.complete loading "Failing!")))))
+        dynamic _e
+        nil)
+      (finally
+        (.close client)))))
+
+(defn latest-sha
+  "Getting available latest SHA from ClojureDart repository.
+   Prompts user to use fallback SHA on failure, or aborts."
+  []
+  (let [loading (.progress logger (str "Getting latest version from " (.toString sha-url)))
+        sha (await (fetch-sha))]
+    (if (some? sha)
+      (do
+        (.complete loading (str "Using " sha))
+        sha)
+      (do
+        (.complete loading "Failed to fetch latest SHA!")
+        (let [use-fallback (.confirm logger
+                             (str "Failed to fetch latest SHA. Use fallback ("
+                                  fallback-sha
+                                  ")?")
+                             .defaultValue true)]
+          (if use-fallback
+            (do
+              (.info logger (str "Using fallback SHA: " fallback-sha))
+              fallback-sha)
+            (do
+              (err "Aborting: no valid SHA available.")
+              (exit 1))))))))
 
 (defn generate
   "Validate and generate project. gen-fn has two params signature, insist of project name and directory name"
