@@ -11,7 +11,7 @@
 (defn- parse-version
   "Parse a version string like '2.0.0' into a vector of ints [2 0 0]."
   [v]
-  (mapv #(int (parse-long %)) (clojure.string/split v #"\.")))
+  (mapv #(.parse int %) (clojure.string/split v #"\.")))
 
 (defn- newer?
   "Returns true if version-a is newer than version-b."
