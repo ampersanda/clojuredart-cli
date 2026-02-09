@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/cljds.svg)](https://pub.dev/packages/cljds)
 
-ClojureDart Project Generation made using ClojureDart, based on steps from 
+ClojureDart Project Generation made using ClojureDart, based on steps from
 
 Dart
 > https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md.
@@ -18,17 +18,35 @@ $ dart pub global activate cljds
 
 ## Usage
 
-TLDR; (with selection and input)
+Interactive mode (prompts for project type and name):
 
 ```shell
 $ cljds
 ```
 
-You can also use arguments to create project 
+Direct commands:
 
 ```shell
-$ cljds dart project-name # for plain Dart project
-$ cljds flutter project-name # for Flutter project
+$ cljds dart project-name       # generate plain Dart project
+$ cljds flutter project-name    # generate Flutter project
+```
+
+### Flags
+
+```
+-h, --help       Print usage information
+    --version    Print the current version
+-o, --output     Directory to create the project in
+```
+
+### Examples
+
+```shell
+$ cljds --help
+$ cljds --version
+$ cljds dart my_app
+$ cljds flutter my_app -o /tmp
+$ cljds dart                    # prompts for project name
 ```
 
 ## Contributing
@@ -42,13 +60,13 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 Warming up `.clojuredart/libs-info.edn` (helps us emit better code)
 
 Adding dev dependencies
-Resolving dependencies... 
+Resolving dependencies...
 < _fe_analyzer_shared 38.0.0 (was 44.0.0) (44.0.0 available)
 < analyzer 3.4.1 (was 4.4.0) (4.4.0 available)
 Changed 2 dependencies!
 
 Fetching dependencies
-Resolving dependencies... 
+Resolving dependencies...
   _fe_analyzer_shared 38.0.0 (44.0.0 available)
   analyzer 3.4.1 (4.4.0 available)
 Got dependencies!
@@ -82,7 +100,7 @@ Host key for github.com has changed and you have requested strict checking.
 Host key verification failed.
 ```
 
-To solve this, remove old key by running 
+To solve this, remove old key by running
 
 ```bash
 $ ssh-keygen -R github.com
