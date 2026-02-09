@@ -18,7 +18,7 @@ sed -i '' 's|lib|#lib|g' .gitignore
 sed -i '' 's|bin|#bin|g' .gitignore
 
 # publish to https://pub.dev/packages/cljds
-dart pub publish
+dart pub publish --force
 
 if [ $? -eq 65 ]
 then

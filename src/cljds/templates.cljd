@@ -18,7 +18,7 @@
 
 (def ^:private deps-edn-template
   "{:paths [\"src\"]
- :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
+ :deps {org.clojure/clojure {:mvn/version \"1.12.0\"}
         tensegritics/clojuredart
         {:git/url \"https://github.com/tensegritics/ClojureDart.git\"
          :sha \"{{sha}}\"}}

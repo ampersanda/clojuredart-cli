@@ -1,3 +1,6 @@
+## 2.0.2
+- Bump generated `deps.edn` Clojure version from 1.10.1 to 1.12.0 (latest ClojureDart requires 1.11+)
+
 ## 2.0.1
 - Fix `clj -M:cljd init` failure not detected: exit code is now checked and errors are properly reported with cleanup
 
