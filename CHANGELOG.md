@@ -1,3 +1,6 @@
+## 2.1.0
+- Robust rollback on project creation failure: delete existing directory before recreation on overwrite, warn instead of crashing if cleanup fails
+
 ## 2.0.2
 - Bump generated `deps.edn` Clojure version from 1.10.1 to 1.12.0 (latest ClojureDart requires 1.11+)
 

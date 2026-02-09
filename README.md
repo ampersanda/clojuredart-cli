@@ -10,7 +10,7 @@ A CLI tool for generating ClojureDart projects based on the official quick-start
 ## Installing
 
 ```shell
-$ dart pub global activate cljds
+$ dart pub global activate cljds 2.1.0
 ```
 
 ## Prerequisites
