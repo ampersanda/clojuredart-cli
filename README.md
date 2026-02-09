@@ -31,6 +31,10 @@ $ cljds dart project-name # for plain Dart project
 $ cljds flutter project-name # for Flutter project
 ```
 
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to set up the project and submit changes.
+
 ## Troubleshooting
 - Got "Cannot rename file to" error
 
