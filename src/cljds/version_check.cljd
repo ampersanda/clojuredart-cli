@@ -1,0 +1,42 @@
+(ns cljds.version-check
+  (:require
+    ["dart:convert" :refer [jsonDecode]]
+    [cljds.consts :refer [version]]
+    [cljds.utils.log :refer [info]]
+    ["package:http/http.dart" :refer [Client]]))
+
+(def ^:private pub-api-url
+  (.parse Uri "https://pub.dev/api/packages/cljds"))
+
+(defn- parse-version
+  "Parse a version string like '2.0.0' into a vector of ints [2 0 0]."
+  [v]
+  (mapv #(int (parse-long %)) (clojure.string/split v #"\.")))
+
+(defn- newer?
+  "Returns true if version-a is newer than version-b."
+  [version-a version-b]
+  (let [a (parse-version version-a)
+        b (parse-version version-b)]
+    (pos? (compare a b))))
+
+(defn check-for-update
+  "Non-blocking check against pub.dev for newer version. Fails silently."
+  []
+  (try
+    (let [client (Client)]
+      (try
+        (let [response (await (.get client pub-api-url))]
+          (when (= 200 (.-statusCode response))
+            (let [data (jsonDecode (.-body response))
+                  latest (-> data (aget "latest") (aget "version"))]
+              (when (newer? latest version)
+                (info "")
+                (info (str "Update available! " version " -> " latest))
+                (info "Run `dart pub global activate cljds` to update.")))))
+        (finally
+          (.close client))))
+    (catch
+      #_{:clj-kondo/ignore [:unresolved-symbol]}
+      dynamic _e
+      nil)))

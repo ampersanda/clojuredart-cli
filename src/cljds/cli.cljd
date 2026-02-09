@@ -1,0 +1,66 @@
+(ns cljds.cli
+  (:require
+    [cljds.consts :refer [version]]
+    ["package:args/args.dart" :refer [ArgParser]]))
+
+(def ^:private parser
+  (doto (ArgParser)
+    (.addFlag "help" .abbr "h" .negatable false .help "Print this usage information.")
+    (.addFlag "version" .negatable false .help "Print the current version.")
+    (.addOption "output" .abbr "o" .help "Directory to create the project in.")))
+
+(def usage-text
+  (str "ClojureDart project generator.\n"
+       "\n"
+       "Usage: cljds <command> [arguments]\n"
+       "\n"
+       "Available commands:\n"
+       "  dart       Generate a plain Dart ClojureDart project\n"
+       "  flutter    Generate a Flutter ClojureDart project\n"
+       "\n"
+       "Run with no arguments for interactive mode.\n"
+       "\n"
+       (.-usage parser)))
+
+(def version-text
+  (str "cljds " version))
+
+(defn parse-args
+  "Parse CLI arguments into a map with :help? :version? :output :type :name :error"
+  [arguments]
+  (try
+    (let [results (.parse parser arguments)
+          rest-args (.-rest results)]
+      (cond
+        (.wasParsed results "help")
+        {:help? true}
+
+        (.wasParsed results "version")
+        {:version? true}
+
+        :else
+        (let [output (. results "[]" "output")
+              opts (cond-> {}
+                     output (assoc :output output))]
+          (cond
+            (empty? rest-args)
+            (merge opts {:interactive? true})
+
+            (= 1 (count rest-args))
+            (let [type-str (first rest-args)]
+              (if (contains? #{"dart" "flutter"} type-str)
+                (merge opts {:type (keyword type-str)})
+                {:error (str "Unknown command: " type-str)}))
+
+            (= 2 (count rest-args))
+            (let [[type-str project-name] rest-args]
+              (if (contains? #{"dart" "flutter"} type-str)
+                (merge opts {:type (keyword type-str) :name project-name})
+                {:error (str "Unknown command: " type-str)}))
+
+            :else
+            {:error "Too many arguments."}))))
+    (catch
+      #_{:clj-kondo/ignore [:unresolved-symbol]}
+      dynamic e
+      {:error (.toString e)})))
