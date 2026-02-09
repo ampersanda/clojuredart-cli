@@ -1,31 +1,39 @@
 (ns cljds.templates
   (:require [clojure.string :as string]))
 
-(defn edn [type sha namespace]
-  (when (keyword? type)
-    (-> "{:paths [\"src\"] ; where your cljd files will live
+(defn- render
+  "Replace {{key}} placeholders in template with values from data map.
+   Throws if any unfilled placeholders remain."
+  [template data]
+  (let [result (reduce-kv
+                 (fn [s k v]
+                   (string/replace s (str "{{" (name k) "}}") (str v)))
+                 template
+                 data)
+        unfilled (re-find #"\{\{[a-zA-Z_-]+\}\}" result)]
+    (when unfilled
+      (throw (ex-info (str "Unfilled template placeholder: " unfilled)
+                      {:placeholder unfilled})))
+    result))
+
+(def ^:private deps-edn-template
+  "{:paths [\"src\"]
  :deps {org.clojure/clojure {:mvn/version \"1.10.1\"}
         tensegritics/clojuredart
-        {:git/url \"git@github.com:tensegritics/ClojureDart.git\"
-        ; or  \"https://github.com/tensegritics/ClojureDart.git\"
-        :sha \"CLJD_SHA\"}}
+        {:git/url \"https://github.com/tensegritics/ClojureDart.git\"
+         :sha \"{{sha}}\"}}
  :aliases {:cljd {:main-opts [\"-m\" \"cljd.build\"]}}
- :cljd/opts {:kind PROJECT_TYPE
-             :main NAMESPACE}}"
-        (string/replace #"PROJECT_TYPE" (str type))
-        (string/replace #"CLJD_SHA" sha)
-        (string/replace #"NAMESPACE" namespace))))
+ :cljd/opts {:kind {{project-type}}
+             :main {{namespace}}}}")
 
-
-(defn dart-main [namespace]
-  (-> "(ns NAMESPACE)
+(def ^:private dart-main-template
+  "(ns {{namespace}})
 
 (defn main []
-  (print \"hello, world\"))"
-      (string/replace #"NAMESPACE" namespace)))
+  (print \"hello, world\"))")
 
-(defn flutter-main [namespace]
-  (-> "(ns NAMESPACE
+(def ^:private flutter-main-template
+  "(ns {{namespace}}
   (:require [\"package:flutter/material.dart\" :as m]
             [cljd.flutter :as f]))
 
@@ -40,5 +48,24 @@
                   .child (m/Text \"This text is Centered.\"
                                  .style (m/TextStyle
                                          .color m.Colors/red
-                                         .fontSize 32.0)))))))"
-      (string/replace #"NAMESPACE" namespace)))
+                                         .fontSize 32.0)))))))")
+
+(def ^:private templates
+  {[:dart :deps-edn]     deps-edn-template
+   [:flutter :deps-edn]  deps-edn-template
+   [:dart :main]         dart-main-template
+   [:flutter :main]      flutter-main-template})
+
+(defn render-deps-edn
+  "Render deps.edn template for the given project type, SHA, and namespace."
+  [project-type sha namespace]
+  (render (get templates [project-type :deps-edn])
+          {:project-type (str project-type)
+           :sha          sha
+           :namespace    namespace}))
+
+(defn render-main
+  "Render main source file template for the given project type and namespace."
+  [project-type namespace]
+  (render (get templates [project-type :main])
+          {:namespace namespace}))
