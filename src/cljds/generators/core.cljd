@@ -1,10 +1,13 @@
 (ns cljds.generators.core
   (:require
-    ["dart:io" :refer [exit]]
+    ["dart:io" :refer [exit Process]]
     [cljds.utils.names :refer [names]]
     [cljds.consts :refer [sha-url fallback-sha]]
+    [cljds.templates :as templates]
+    [cljds.utils.io :as io]
     [clojure.string :as string]
     [cljds.utils.log :refer [err logger]]
+    [cljds.utils.shell :as shell]
     ["package:http/http.dart" :refer [Client]]))
 
 (defn valid-sha?
@@ -44,11 +47,9 @@
         (.complete loading (str "Using " sha))
         sha)
       (do
-        (.complete loading "Failed to fetch latest SHA!")
+        (.fail loading "Failed to fetch latest SHA!")
         (let [use-fallback (.confirm logger
-                             (str "Failed to fetch latest SHA. Use fallback ("
-                                  fallback-sha
-                                  ")?")
+                             (str "Use fallback SHA (" fallback-sha ")?")
                              .defaultValue true)]
           (if use-fallback
             (do
@@ -56,10 +57,72 @@
               fallback-sha)
             (do
               (err "Aborting: no valid SHA available.")
-              (exit 1))))))))
+              nil)))))))
 
-(defn generate
-  "Validate and generate project. gen-fn has two params signature, insist of project name and directory name"
-  [project-name gen-fn]
-  (let [{:keys [name dir]} (names project-name)]
-    (gen-fn name dir)))
+(defn check-prerequisites
+  "Verify that required tools are on PATH. Returns list of missing tools."
+  []
+  (let [tools ["clj"]
+        missing (atom [])]
+    (doseq [tool tools]
+      (try
+        (let [result (await (shell/run "which" [tool]))]
+          (when-not (= 0 (.-exitCode result))
+            (swap! missing conj tool)))
+        (catch
+          #_{:clj-kondo/ignore [:unresolved-symbol]}
+          dynamic _e
+          (swap! missing conj tool))))
+    @missing))
+
+(defn- make-files
+  "Create project files: deps.edn and main source file."
+  [project-type sha dir-name namespace]
+  (let [dir (await (io/mkdir dir-name))]
+    (let [loading (.progress logger (str "Creating '" (.-path dir) "' project"))]
+      (let [edn-file (await (io/mkfile (str dir-name "/deps.edn")))
+            content (templates/render-deps-edn project-type sha namespace)]
+        (await (.writeAsString edn-file content)))
+      (.complete loading (str "Project '" (.-path dir) "' created!")))
+
+    (let [loading (.progress logger "Making core file project")
+          path (str dir-name "/src/" dir-name "/core.cljd")
+          main-file (await (io/mkfile path :recursive true))
+          content (templates/render-main project-type namespace)]
+      (await (.writeAsString main-file content))
+      (.complete loading (str "Core file '" path "' created!")))
+
+    (let [loading (.progress logger "Initializing project")
+          result (await
+                   (shell/run "clj" ["-M:cljd" "init"] .workingDirectory dir-name))]
+      (await (io/mkdir (str dir-name "/src/" dir-name) :recursive true))
+      (.complete loading "Project initialized!")
+      (if (nil? (.-stderr result))
+        (.detail logger (str "\n" (.-stdout result)))
+        (.detail logger (str "\n" (.-stderr result)))))))
+
+(defn generate-project
+  "Unified project generation. Returns true on success, false on failure."
+  [project-name project-type opts]
+  (let [{:keys [name dir]} (names project-name)
+        namespace (str name ".core")
+        output (:output opts)
+        dir-name (if output
+                   (str output "/" dir)
+                   dir)]
+    (let [sha (await (latest-sha))]
+      (when (nil? sha)
+        (err "No valid SHA available. Cannot generate project.")
+        (exit 1))
+      (try
+        (await (make-files project-type sha dir-name namespace))
+        true
+        (catch
+          #_{:clj-kondo/ignore [:unresolved-symbol]}
+          dynamic e
+          (err (str "Failed to generate project: " e))
+          (when (io/exists? dir-name)
+            (let [loading (.progress logger "Cleaning up partial files...")]
+              (await (io/delete-dir dir-name))
+              (.complete loading "Cleaned up.")))
+          false)))))

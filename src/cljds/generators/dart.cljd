@@ -1,59 +1,22 @@
 (ns cljds.generators.dart
   (:require
-    ["dart:io" :refer [exit Process]]
     [cljds.consts :refer [dart-docs-url]]
-    [cljds.utils.io :as io]
-    [cljds.templates :refer [edn dart-main]]
-    [cljds.utils.log :refer [info err logger detail]]
-    [cljds.generators.core :as gen]
-    [cljds.utils.shell :as shell]))
+    [cljds.utils.log :refer [info]]
+    [cljds.utils.names :as names]
+    [cljds.generators.core :as gen]))
 
-(defn- make-files [sha dir-name namespace]
-  (let [dir (await (io/mkdir dir-name))]
-    (let [loading (.progress logger (str "Creating '" (.-path dir) "' project"))]
-      ;; initialize deps.edn
-      (let [edn-file (await (io/mkfile (str dir-name "/deps.edn")))
-            content (edn :dart sha namespace)]
-        (await (.writeAsString edn-file content)))
-
-      (.complete loading (str "Project '" (.-path dir) "' created!")))
-
-    (let [loading (.progress logger (str "Making core file project"))
-          path (str dir-name "/src/" dir-name "/core.cljd")
-          main-file (await (io/mkfile path :recursive true))
-          content (dart-main namespace)]
-      ;; add main file
-      (await (.writeAsString main-file content))
-      (.complete loading (str "Core file '" path "' created!")))
-
-
-    (let [loading (.progress logger (str "Initializing project"))
-          result (await
-                   (shell/run "clj" ["-M:cljd" "init"] .workingDirectory dir-name))]
-      (await (io/mkdir (str dir-name "/src/" dir-name) :recursive true))
-      (.complete loading "Project initialized!")
-
-      (if (nil? (.-stderr result))
-        (detail (str "\n" (.-stdout result)))
-        (detail (str "\n" (.-stderr result)))))))
-
-(defn- dart-gen
-  "Generate plain-dart project -> https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md"
-  [name dir-name]
-  (let [namespace (str name ".core")
-        sha (await (gen/latest-sha))]
-    (when (nil? sha)
-      (err "No valid SHA available. Cannot generate project.")
-      (exit 1))
-    (await (make-files sha dir-name namespace))
-
-    (info
-      "To run"
-      (str "$ cd " dir-name)
-      (str "$ clj -M:cljd compile && dart run bin/" dir-name ".dart")
-      ""
-      (str "Read more " dart-docs-url))
-    (exit 0)))
-
-(defn generate [name]
-  (gen/generate name dart-gen))
+(defn generate
+  "Generate a plain Dart ClojureDart project."
+  [project-name opts]
+  (let [success (await (gen/generate-project project-name :dart opts))]
+    (when success
+      (let [{:keys [dir]} (names/names project-name)
+            output (:output opts)
+            dir-name (if output (str output "/" dir) dir)]
+        (info
+          ""
+          "To run:"
+          (str "  $ cd " dir-name)
+          (str "  $ clj -M:cljd compile && dart run bin/" dir ".dart")
+          ""
+          (str "Read more: " dart-docs-url))))))

@@ -1,59 +1,22 @@
 (ns cljds.generators.flutter
   (:require
-    ["dart:io" :refer [exit Process]]
-    [cljds.generators.core :as gen]
-    [cljds.utils.io :as io]
     [cljds.consts :refer [flutter-docs-url]]
-    [cljds.templates :refer [edn flutter-main]]
-    [cljds.utils.log :refer [info err logger detail]]
-    [cljds.utils.shell :as shell]))
+    [cljds.utils.log :refer [info]]
+    [cljds.utils.names :as names]
+    [cljds.generators.core :as gen]))
 
-(defn- make-files [sha dir-name namespace]
-  (let [dir (await (io/mkdir dir-name))]
-    (let [loading (.progress logger (str "Creating '" (.-path dir) "' project"))]
-      ;; initialize deps.edn
-      (let [edn-file (await (io/mkfile (str dir-name "/deps.edn")))
-            content (edn :flutter sha namespace)]
-        (await (.writeAsString edn-file content)))
-
-      (.complete loading (str "Project '" (.-path dir) "' created!")))
-
-    (let [loading (.progress logger (str "Making core file project"))
-          path (str dir-name "/src/" dir-name "/core.cljd")
-          main-file (await (io/mkfile path :recursive true))
-          content (flutter-main namespace)]
-      ;; add main file
-      (await (.writeAsString main-file content))
-      (.complete loading (str "Core file '" path "' created!")))
-
-    (let [loading (.progress logger (str "Initializing project"))
-          result (await
-                   (shell/run "clj" ["-M:cljd" "init"] .workingDirectory dir-name))]
-      (await (io/mkdir (str dir-name "/src/" dir-name) :recursive true))
-      (if (nil? (.-stderr result))
-        (detail (str "\n" (.-stdout result)))
-        (err (str "\n" (.-stderr result))))
-
-      (.complete loading "Project initialized!"))))
-
-(defn- flutter-gen
-  "Generate flutter project -> https://github.com/Tensegritics/ClojureDart/blob/main/doc/flutter-quick-start.md"
-  [name dir-name]
-  (let [namespace (str name ".core")
-        sha (await (gen/latest-sha))]
-    (when (nil? sha)
-      (err "No valid SHA available. Cannot generate project.")
-      (exit 1))
-    (await (make-files sha dir-name namespace))
-
-    (info
-      "To run"
-      (str "$ cd " dir-name)
-      "$ clj -M:cljd flutter"
-      ""
-      (str "Read more " flutter-docs-url))
-
-    (exit 0)))
-
-(defn generate [name]
-  (gen/generate name flutter-gen))
+(defn generate
+  "Generate a Flutter ClojureDart project."
+  [project-name opts]
+  (let [success (await (gen/generate-project project-name :flutter opts))]
+    (when success
+      (let [{:keys [dir]} (names/names project-name)
+            output (:output opts)
+            dir-name (if output (str output "/" dir) dir)]
+        (info
+          ""
+          "To run:"
+          (str "  $ cd " dir-name)
+          "  $ clj -M:cljd flutter"
+          ""
+          (str "Read more: " flutter-docs-url))))))
