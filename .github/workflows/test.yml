@@ -36,5 +36,16 @@ jobs:
       - name: Compile ClojureDart to Dart
         run: clojure -M:cljd compile
 
+      - name: Create bin entrypoint
+        run: |
+          mkdir -p bin
+          cat > bin/cljds.dart << 'EOF'
+          import 'package:cljds/cljd-out/cljds/core.dart' as core;
+
+          void main(List<String> arguments) {
+            core.main(arguments);
+          }
+          EOF
+
       - name: Run tests
         run: dart test

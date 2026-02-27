@@ -377,7 +377,7 @@ void main() {
   });
 
   group('version', () {
-    test('equals 2.0.0', () {
+    test('equals current version', () {
       expect(consts.version$v1, equals('2.2.1'));
     });
 
