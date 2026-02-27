@@ -1,3 +1,7 @@
+## 2.2.1
+- Fix CI: use `clojure` instead of `clj` (rlwrap not available in CI)
+- Expand README usage section with all CLI commands and examples
+
 ## 2.2.0
 - Add `--sha` flag to pin a specific ClojureDart SHA instead of fetching latest
 - Add GitHub Actions CI workflow for automated testing
