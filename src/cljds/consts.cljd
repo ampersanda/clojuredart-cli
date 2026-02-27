@@ -1,6 +1,6 @@
 (ns cljds.consts)
 
-(def version "2.0.0")
+(def version "2.2.0")
 
 (def dart-docs-url
   "https://github.com/Tensegritics/ClojureDart/blob/main/doc/quick-start.md")

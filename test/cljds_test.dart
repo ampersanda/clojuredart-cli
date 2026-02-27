@@ -232,6 +232,53 @@ void main() {
       final error = getKey(result, 'error');
       expect(error, isNotNull);
     });
+
+    test('parses --sha with value', () {
+      final result = cli.parse_args(<String>[
+        'dart',
+        'my_app',
+        '--sha',
+        'abcdef1234567890abcdef1234567890abcdef12'
+      ]);
+      expect(getKey(result, 'sha'),
+          equals('abcdef1234567890abcdef1234567890abcdef12'));
+      expect(getKey(result, 'name'), equals('my_app'));
+    });
+
+    test('parses --sha with short value (parser does not validate)', () {
+      final result =
+          cli.parse_args(<String>['dart', 'my_app', '--sha', 'abc123']);
+      expect(getKey(result, 'sha'), equals('abc123'));
+    });
+
+    test('--sha is null when not provided', () {
+      final result = cli.parse_args(<String>['dart', 'my_app']);
+      expect(getKey(result, 'sha'), isNull);
+    });
+
+    test('parses --sha combined with --output', () {
+      final result = cli.parse_args(<String>[
+        'dart',
+        'my_app',
+        '--sha',
+        'abcdef1234567890abcdef1234567890abcdef12',
+        '-o',
+        '/tmp'
+      ]);
+      expect(getKey(result, 'sha'),
+          equals('abcdef1234567890abcdef1234567890abcdef12'));
+      expect(getKey(result, 'output'), equals('/tmp'));
+    });
+
+    test('parses --sha in interactive mode', () {
+      final result = cli.parse_args(<String>[
+        '--sha',
+        'abcdef1234567890abcdef1234567890abcdef12'
+      ]);
+      expect(getKey(result, 'sha'),
+          equals('abcdef1234567890abcdef1234567890abcdef12'));
+      expect(isTruthy(getKey(result, 'interactive?')), isTrue);
+    });
   });
 
   group('usage_text', () {
@@ -246,13 +293,18 @@ void main() {
       expect(text, contains('dart'));
       expect(text, contains('flutter'));
     });
+
+    test('mentions --sha option', () {
+      final text = cli.usage_text$v1 as String;
+      expect(text, contains('sha'));
+    });
   });
 
   group('version_text', () {
     test('contains cljds and version number', () {
       final text = cli.version_text$v1 as String;
       expect(text, contains('cljds'));
-      expect(text, contains('2.0.0'));
+      expect(text, contains('2.2.0'));
     });
   });
 
@@ -326,7 +378,7 @@ void main() {
 
   group('version', () {
     test('equals 2.0.0', () {
-      expect(consts.version$v1, equals('2.0.0'));
+      expect(consts.version$v1, equals('2.2.0'));
     });
 
     test('matches semver pattern', () {

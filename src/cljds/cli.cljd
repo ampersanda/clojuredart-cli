@@ -7,7 +7,8 @@
   (doto (ArgParser)
     (.addFlag "help" .abbr "h" .negatable false .help "Print this usage information.")
     (.addFlag "version" .negatable false .help "Print the current version.")
-    (.addOption "output" .abbr "o" .help "Directory to create the project in.")))
+    (.addOption "output" .abbr "o" .help "Directory to create the project in.")
+    (.addOption "sha" .help "Specific ClojureDart SHA to use instead of fetching latest.")))
 
 (def usage-text
   (str "ClojureDart project generator.\n"
@@ -40,8 +41,10 @@
 
         :else
         (let [output (. results "[]" "output")
+              sha (. results "[]" "sha")
               opts (cond-> {}
-                     output (assoc :output output))]
+                     output (assoc :output output)
+                     sha (assoc :sha sha))]
           (cond
             (empty? rest-args)
             (merge opts {:interactive? true})

@@ -1,6 +1,7 @@
 # ClojureDart-CLI/CLJDS
 
 [![pub package](https://img.shields.io/pub/v/cljds.svg)](https://pub.dev/packages/cljds)
+[![Tests](https://github.com/ampersanda/clojuredart-cli/actions/workflows/test.yml/badge.svg)](https://github.com/ampersanda/clojuredart-cli/actions/workflows/test.yml)
 
 A CLI tool for generating ClojureDart projects based on the official quick-start guides:
 
@@ -10,7 +11,7 @@ A CLI tool for generating ClojureDart projects based on the official quick-start
 ## Installing
 
 ```shell
-$ dart pub global activate cljds 2.1.0
+$ dart pub global activate cljds 2.2.0
 ```
 
 ## Prerequisites
@@ -40,6 +41,7 @@ $ cljds flutter project-name    # generate Flutter project
 -h, --help       Print usage information
     --version    Print the current version
 -o, --output     Directory to create the project in
+    --sha        Specific ClojureDart SHA to use instead of fetching latest
 ```
 
 ### Examples
@@ -50,7 +52,19 @@ $ cljds --version
 $ cljds dart my_app
 $ cljds flutter my_app -o /tmp
 $ cljds dart                    # prompts for project name
+$ cljds dart my_app --sha abcdef1234567890abcdef1234567890abcdef12
 ```
+
+## Testing
+
+Compile ClojureDart source first, then run tests:
+
+```shell
+$ clj -M:cljd compile
+$ dart test
+```
+
+Tests are also run automatically on push and pull requests via GitHub Actions.
 
 ## Contributing
 

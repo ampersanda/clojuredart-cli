@@ -25,7 +25,7 @@ void main() {
           await Process.run('dart', ['run', 'bin/cljds.dart', '--version']);
       expect(result.exitCode, equals(0));
       final stdout = result.stdout as String;
-      expect(stdout, contains('2.0.0'));
+      expect(stdout, contains('2.2.0'));
     });
 
     test('unknown command exits with code 64', () async {
@@ -40,6 +40,22 @@ void main() {
       final result = await Process.run(
           'dart', ['run', 'bin/cljds.dart', 'dart', 'name', 'extra']);
       expect(result.exitCode, equals(64));
+    });
+
+    test('--sha with invalid SHA exits with error', () async {
+      final result = await Process.run('dart',
+          ['run', 'bin/cljds.dart', 'dart', 'my_project', '--sha', 'abc123']);
+      expect(result.exitCode, isNot(equals(0)));
+      final output = '${result.stdout}${result.stderr}';
+      expect(output, contains('Invalid SHA'));
+    });
+
+    test('--help output shows --sha option', () async {
+      final result =
+          await Process.run('dart', ['run', 'bin/cljds.dart', '--help']);
+      expect(result.exitCode, equals(0));
+      final stdout = result.stdout as String;
+      expect(stdout, contains('sha'));
     });
   });
 }

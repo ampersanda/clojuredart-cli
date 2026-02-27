@@ -1,3 +1,8 @@
+## 2.2.0
+- Add `--sha` flag to pin a specific ClojureDart SHA instead of fetching latest
+- Add GitHub Actions CI workflow for automated testing
+- Add unit and integration tests for `--sha` flag
+
 ## 2.1.0
 - Robust rollback on project creation failure: delete existing directory before recreation on overwrite, warn instead of crashing if cleanup fails
 

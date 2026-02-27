@@ -118,7 +118,17 @@
         dir-name (if output
                    (str output "/" dir)
                    dir)]
-    (let [sha (await (latest-sha))]
+    (let [provided-sha (:sha opts)
+          sha (if provided-sha
+                (if (valid-sha? provided-sha)
+                  (do
+                    (.info logger (str "Using provided SHA: " provided-sha))
+                    provided-sha)
+                  (do
+                    (err (str "Invalid SHA: " provided-sha ". Must be a 40-character hex string."))
+                    (exit 1)
+                    nil))
+                (await (latest-sha)))]
       (when (nil? sha)
         (err "No valid SHA available. Cannot generate project.")
         (exit 1))
