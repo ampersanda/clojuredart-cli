@@ -34,7 +34,7 @@ jobs:
         run: dart pub get
 
       - name: Compile ClojureDart to Dart
-        run: clj -M:cljd compile
+        run: clojure -M:cljd compile
 
       - name: Run tests
         run: dart test
