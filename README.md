@@ -22,37 +22,66 @@ $ dart pub global activate cljds 2.2.0
 
 ## Usage
 
-Interactive mode (prompts for project type and name):
+```
+Usage: cljds <command> [arguments]
+
+Available commands:
+  dart       Generate a plain Dart ClojureDart project
+  flutter    Generate a Flutter ClojureDart project
+
+Global options:
+  -h, --help       Print usage information
+      --version    Print the current version
+
+Command options:
+  -o, --output     Directory to create the project in
+      --sha        Specific ClojureDart SHA to use instead of fetching latest
+```
+
+### Interactive mode
+
+Run with no arguments to be prompted for project type and name:
 
 ```shell
 $ cljds
 ```
 
-Direct commands:
+### Generate a project
 
 ```shell
-$ cljds dart project-name       # generate plain Dart project
-$ cljds flutter project-name    # generate Flutter project
+$ cljds dart my_app                # plain Dart project
+$ cljds flutter my_app             # Flutter project
+$ cljds dart                       # prompts for project name
+$ cljds flutter                    # prompts for project name
 ```
 
-### Flags
-
-```
--h, --help       Print usage information
-    --version    Print the current version
--o, --output     Directory to create the project in
-    --sha        Specific ClojureDart SHA to use instead of fetching latest
-```
-
-### Examples
+### Custom output directory
 
 ```shell
-$ cljds --help
-$ cljds --version
-$ cljds dart my_app
-$ cljds flutter my_app -o /tmp
-$ cljds dart                    # prompts for project name
+$ cljds dart my_app -o /tmp        # creates /tmp/my_app
+$ cljds flutter my_app -o ~/projects
+```
+
+### Pin a specific ClojureDart version
+
+By default, `cljds` fetches the latest ClojureDart SHA from GitHub. Use `--sha` to pin a specific commit:
+
+```shell
 $ cljds dart my_app --sha abcdef1234567890abcdef1234567890abcdef12
+```
+
+### Combine options
+
+```shell
+$ cljds dart my_app --sha abcdef1234567890abcdef1234567890abcdef12 -o /tmp
+$ cljds flutter my_app -o ~/projects --sha abcdef1234567890abcdef1234567890abcdef12
+```
+
+### Other
+
+```shell
+$ cljds --help                     # print usage information
+$ cljds --version                  # print current version
 ```
 
 ## Testing
