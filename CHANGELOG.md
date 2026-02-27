@@ -1,3 +1,6 @@
+## 2.2.2
+- Fix CI: create bin entrypoint for integration tests (`bin/` is gitignored)
+
 ## 2.2.1
 - Fix CI: use `clojure` instead of `clj` (rlwrap not available in CI)
 - Expand README usage section with all CLI commands and examples
