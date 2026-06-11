@@ -1,3 +1,8 @@
+## 2.2.3
+- Fix `-o`/`--output`: the output directory leaked into the source path, placing the main file at `src/<output>/<name>/core.cljd` instead of `src/<name>/core.cljd`
+- Prerequisite check is now project-type aware: Flutter projects also verify `flutter` is on PATH
+- Clearer error messages when fetching the latest ClojureDart SHA fails (HTTP status, invalid body, or exception is shown)
+
 ## 2.2.2
 - Fix CI: create bin entrypoint for integration tests (`bin/` is gitignored)
 

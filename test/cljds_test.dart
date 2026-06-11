@@ -349,7 +349,7 @@ void main() {
     test('contains cljds and version number', () {
       final text = cli.version_text$v1 as String;
       expect(text, contains('cljds'));
-      expect(text, contains('2.2.2'));
+      expect(text, contains('2.2.3'));
     });
   });
 
@@ -423,7 +423,7 @@ void main() {
 
   group('version', () {
     test('equals current version', () {
-      expect(consts.version$v1, equals('2.2.2'));
+      expect(consts.version$v1, equals('2.2.3'));
     });
 
     test('matches semver pattern', () {

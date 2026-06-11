@@ -25,7 +25,7 @@ void main() {
           await Process.run('dart', ['run', 'bin/cljds.dart', '--version']);
       expect(result.exitCode, equals(0));
       final stdout = result.stdout as String;
-      expect(stdout, contains('2.2.2'));
+      expect(stdout, contains('2.2.3'));
     });
 
     test('unknown command exits with code 64', () async {
