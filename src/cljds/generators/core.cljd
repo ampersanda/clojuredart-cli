@@ -1,7 +1,7 @@
 (ns cljds.generators.core
   (:require
     ["dart:io" :refer [exit Process]]
-    [cljds.utils.names :refer [names]]
+    [cljds.utils.names :as names]
     [cljds.consts :refer [sha-url fallback-sha]]
     [cljds.templates :as templates]
     [cljds.utils.io :as io]
@@ -17,7 +17,8 @@
        (re-matches #"^[0-9a-f]{40}$" sha)))
 
 (defn- fetch-sha
-  "Fetch latest SHA from ClojureDart repository. Returns nil on failure."
+  "Fetch latest SHA from ClojureDart repository.
+   Returns {:sha sha} on success, or {:error message} on failure."
   []
   (let [client (Client)]
     (try
@@ -26,13 +27,16 @@
         (if (= status-code 200)
           (let [result (filter (fn [e] (seq e)) (string/split-lines (.-body content)))
                 latest (last result)]
-            (when (valid-sha? latest)
-              latest))
-          nil))
+            (if (valid-sha? latest)
+              {:sha latest}
+              {:error (str "Response did not contain a valid SHA (got: "
+                           (if latest (str "'" latest "'") "empty body")
+                           ")")}))
+          {:error (str "HTTP " status-code " from " (.toString sha-url))}))
       (catch
         #_{:clj-kondo/ignore [:unresolved-symbol]}
-        dynamic _e
-        nil)
+        dynamic e
+        {:error (.toString e)})
       (finally
         (.close client)))))
 
@@ -41,13 +45,13 @@
    Prompts user to use fallback SHA on failure, or aborts."
   []
   (let [loading (.progress logger (str "Getting latest version from " (.toString sha-url)))
-        sha (await (fetch-sha))]
-    (if (some? sha)
+        {:keys [sha error]} (await (fetch-sha))]
+    (if sha
       (do
         (.complete loading (str "Using " sha))
         sha)
       (do
-        (.fail loading "Failed to fetch latest SHA!")
+        (.fail loading (str "Failed to fetch latest SHA: " error))
         (let [use-fallback (.confirm logger
                              (str "Use fallback SHA (" fallback-sha ")?")
                              .defaultValue true)]
@@ -59,12 +63,18 @@
               (err "Aborting: no valid SHA available.")
               nil)))))))
 
+(defn required-tools
+  "Return the list of CLI tools needed for the given project type."
+  [project-type]
+  (case project-type
+    :flutter ["clj" "flutter"]
+    ["clj"]))
+
 (defn check-prerequisites
   "Verify that required tools are on PATH. Returns list of missing tools."
-  []
-  (let [tools ["clj"]
-        missing (atom [])]
-    (doseq [tool tools]
+  [project-type]
+  (let [missing (atom [])]
+    (doseq [tool (required-tools project-type)]
       (try
         (let [result (await (shell/run "which" [tool]))]
           (when-not (= 0 (.-exitCode result))
@@ -77,7 +87,7 @@
 
 (defn- make-files
   "Create project files: deps.edn and main source file."
-  [project-type sha dir-name namespace]
+  [project-type sha dir-name src-path namespace]
   (let [dir (await (io/mkdir dir-name))]
     (let [loading (.progress logger (str "Creating '" (.-path dir) "' project"))]
       (let [edn-file (await (io/mkfile (str dir-name "/deps.edn")))
@@ -86,16 +96,14 @@
       (.complete loading (str "Project '" (.-path dir) "' created!")))
 
     (let [loading (.progress logger "Making core file project")
-          path (str dir-name "/src/" dir-name "/core.cljd")
-          main-file (await (io/mkfile path :recursive true))
+          main-file (await (io/mkfile src-path :recursive true))
           content (templates/render-main project-type namespace)]
       (await (.writeAsString main-file content))
-      (.complete loading (str "Core file '" path "' created!")))
+      (.complete loading (str "Core file '" src-path "' created!")))
 
     (let [loading (.progress logger "Initializing project")
           result (await
                    (shell/run "clj" ["-M:cljd" "init"] .workingDirectory dir-name))]
-      (await (io/mkdir (str dir-name "/src/" dir-name) :recursive true))
       (if (= 0 (.-exitCode result))
         (do
           (.complete loading "Project initialized!")
@@ -112,12 +120,10 @@
 (defn generate-project
   "Unified project generation. Returns true on success, false on failure."
   [project-name project-type opts]
-  (let [{:keys [name dir]} (names project-name)
+  (let [{:keys [name]} (names/names project-name)
         namespace (str name ".core")
-        output (:output opts)
-        dir-name (if output
-                   (str output "/" dir)
-                   dir)]
+        dir-name (names/resolve-dir project-name (:output opts))
+        src-path (names/source-path project-name (:output opts))]
     (let [provided-sha (:sha opts)
           sha (if provided-sha
                 (if (valid-sha? provided-sha)
@@ -133,7 +139,7 @@
         (err "No valid SHA available. Cannot generate project.")
         (exit 1))
       (try
-        (await (make-files project-type sha dir-name namespace))
+        (await (make-files project-type sha dir-name src-path namespace))
         true
         (catch
           #_{:clj-kondo/ignore [:unresolved-symbol]}

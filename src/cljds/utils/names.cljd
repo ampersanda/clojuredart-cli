@@ -42,3 +42,17 @@
 (defn names [name]
   {:name (string/replace name #"_" "-")
    :dir  (string/replace name #"-" "_")})
+
+(defn resolve-dir
+  "Resolve the on-disk directory for a project, optionally rooted at output."
+  [project-name output]
+  (let [{:keys [dir]} (names project-name)]
+    (if output (str output "/" dir) dir)))
+
+(defn source-path
+  "Path to the project's main source file, optionally rooted at output.
+   The src subdirectory always uses the bare project dir name, regardless
+   of output."
+  [project-name output]
+  (let [{:keys [dir]} (names project-name)]
+    (str (resolve-dir project-name output) "/src/" dir "/core.cljd")))

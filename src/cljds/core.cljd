@@ -29,9 +29,7 @@
     true))
 
 (defn- run-generate [project-type project-name opts]
-  (let [{:keys [dir]} (names/names project-name)
-        output (:output opts)
-        dir-name (if output (str output "/" dir) dir)]
+  (let [dir-name (names/resolve-dir project-name (:output opts))]
     (when-not (confirm-overwrite dir-name)
       (info "Aborted.")
       (exit 0))
@@ -39,7 +37,7 @@
       (let [loading (.progress logger "Removing existing directory...")]
         (await (io/delete-dir dir-name))
         (.complete loading "Existing directory removed.")))
-    (let [missing (await (gen/check-prerequisites))]
+    (let [missing (await (gen/check-prerequisites project-type))]
       (when (seq missing)
         (err (str "Missing required tools: " (clojure.string/join ", " missing)))
         (err "Please install them and try again.")

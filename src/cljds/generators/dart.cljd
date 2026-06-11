@@ -11,8 +11,7 @@
   (let [success (await (gen/generate-project project-name :dart opts))]
     (when success
       (let [{:keys [dir]} (names/names project-name)
-            output (:output opts)
-            dir-name (if output (str output "/" dir) dir)]
+            dir-name (names/resolve-dir project-name (:output opts))]
         (info
           ""
           "To run:"

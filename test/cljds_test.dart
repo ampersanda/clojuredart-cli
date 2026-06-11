@@ -116,6 +116,51 @@ void main() {
     });
   });
 
+  group('resolve_dir', () {
+    test('returns dir name when output is null', () {
+      expect(names.resolve_dir('hello-world', null), equals('hello_world'));
+    });
+
+    test('joins output and dir name with slash', () {
+      expect(names.resolve_dir('hello-world', '/tmp'), equals('/tmp/hello_world'));
+    });
+
+    test('uses dir-form (underscores) of project name', () {
+      expect(names.resolve_dir('my-app', '/x'), equals('/x/my_app'));
+      expect(names.resolve_dir('my_app', '/x'), equals('/x/my_app'));
+    });
+  });
+
+  group('source_path', () {
+    test('places core.cljd under src/<dir> without output', () {
+      expect(names.source_path('hello-world', null),
+          equals('hello_world/src/hello_world/core.cljd'));
+    });
+
+    test('output dir does not leak into the src namespace path', () {
+      expect(names.source_path('hello-world', 'apps'),
+          equals('apps/hello_world/src/hello_world/core.cljd'));
+      expect(names.source_path('my_app', '/tmp/out'),
+          equals('/tmp/out/my_app/src/my_app/core.cljd'));
+    });
+  });
+
+  group('required_tools', () {
+    test('flutter projects need clj and flutter', () {
+      final flutterKw = const cljd.Keyword(null, 'flutter', 2471731111);
+      final result = gen_core.required_tools(flutterKw);
+      expect(result.toString(), contains('clj'));
+      expect(result.toString(), contains('flutter'));
+    });
+
+    test('dart projects need only clj', () {
+      final dartKw = const cljd.Keyword(null, 'dart', 2238625648);
+      final result = gen_core.required_tools(dartKw);
+      expect(result.toString(), contains('clj'));
+      expect(result.toString(), isNot(contains('flutter')));
+    });
+  });
+
   // ============================================================
   // Template Rendering (cljds/templates.dart)
   // ============================================================
